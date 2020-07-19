@@ -1,0 +1,267 @@
+
+ 0) About
+ ********
+
+ libgcfg: goliath's config file library (because YAML & JSON absolutely suck
+ for config files).
+
+
+ Config files as understood by the parser contain lines with a keyword,
+ followed by an optional argument.
+
+ The following types of arguments are supported:
+  - Numbers (integer or floating point with optional exponent, the
+    shorthand '%' can be used for 10^-2).
+  - Vectors (up to 4 comma separated numbers between parentheses).
+  - Boolean ("on", "yes", "true" or "off", "no", "false")
+  - Strings (using double quotes and supporting C-style escape sequences, but
+    also \u+XXXX notation for arbitary unicode code points).
+  - Enums (custom string tokens that have a number assigned to them).
+  - MAC address.
+  - Size (an integer with an optional SI suffix which is mapped to a
+    power of 2).
+  - Bandwidth (an integer with an optional SI suffix that is mapped to a power
+    of 2 or 10, depending on spelling, and optional "bit" or "bps" attached).
+  - IPv4 address in dotted decimal notation with an optional CIDR suffix.
+  - IPv6 address with an optional CIDR suffix.
+
+ After the argument, a keyword can have a block of sub-keywords wrapped inside
+ a pair of braces. Such blocks can be nested arbitrarily deep. Alternatively,
+ tex text between the braces can optionally be interpreted as free-form text
+ that isn't parsed, but each line passed to a callback.
+
+ Single-line comments can be written using a '#' character.
+
+ The input is expected to be valid UTF-8 encoded text. String arguments are
+ converted to UTF-8 if \u+XXXX sequences are used. The number parser checks
+ for numeric overflows and aborts in case one happens.
+
+
+ The supported keywords, sub-keywords and the expected argument type are
+ specified in the C-code and callbacks are used by the parser to notify the
+ program of successfull recognition of a token with the parsed argument passed
+ along.
+
+
+ 1) API Design
+ *************
+
+ The main parser function accepts a list of allowed keywords at the top level
+ and a user pointer. The keyword list is terminated by a sentinell that has a
+ NULL pointer as a name.
+
+ Each keyword has the possible parameter type and a callback that is called
+ when the keyword is encountered. Callback arguments are the user pointer and
+ the parsed argument.
+
+ A keyword can have a pointer to a nested keyword list. In that case the
+ keyword is allowed to have a '{ ... }' block with the child-level keywords.
+
+ A bunch of macros are provided to simplify building the keyword list.
+
+ File access is abstracted using a custom file struct that can be hooked and
+ has a callback for error reporting.
+
+
+ 2) Grammar
+ **********
+
+ A config file consists of a list of declarations with roughly the following
+ shape:
+
+  decl_list ::= <decl> [<linebreak> <decl_list>]
+
+  decl ::= <keyword> [<argument>] ['{' <linebreak> <decllist> '}']
+
+
+
+ An argument can be one of the following literal values:
+
+  argument ::= <number> | <vector> | <boolean> | <string> | <enum> |
+               <macaddress> | <bandwidth> | <ipv4address> | <ipv6address> |
+               <size>
+
+
+ 2.1) Number literals
+
+ A number literal consists of an optional sign, a decimal magnitude,
+ an optional decimal fraction optionally followed by either an exponent
+ value or a percent sign '%' suffix. Semantically, the percent sign is a
+ short hand for the exponent value 10^-2.
+
+  number ::= ['-' | '+'] <decimal> ['.' <decimal>] [<exponent> | '%']
+
+  exponent ::= 'e' | 'E' ['-' | '+'] <decimal>
+
+
+ A decimal number is a string of decimal digits without leading zeros:
+
+  decimal ::= '0' | <nonzero>
+
+  nonzero ::= <nzdigit> <digit>*
+
+  nzdigit ::= '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
+
+  digit ::= '0' | <nzdigit>
+
+
+ 2.2) Vector literals
+
+ A vector literal is a comma seperated list of numbers inside parantheses:
+
+  vector ::= '(' <numberlist> ')'
+
+  numberlist ::= <number> [',' <numberlist>]
+
+ Semantically, a distinction is made between 2, 3 or 4 dimensional vectors.
+ Others are not supported.
+
+
+ 2.3) Boolean literals
+
+ A boolean literal can either be one of three strings that semantically
+ represent a true value, or one of three that represents a false value:
+
+  boolean ::= <truevalue> | <falsevalue>
+
+  truevalue ::= 'on' | 'yes' | 'true'
+
+  falsevalue ::= 'off' | 'no' | 'false'
+
+
+ 2.4) String literals
+
+ A string literal is an arbitrary sequence of characters started and terminated
+ by an apostrophe ('"').
+
+ An apostrophe inside a string can be escaped by preceeding it with a
+ backslash ('\', i.e. '\"' is parsed as '"'). A backslash itself can in turn
+ be escaped by preceeding it with a backslash (i.e. '\\' is parsed as '\').
+
+ In addition, the following escape sequences are interpreted:
+  '\b'        Back space character
+  '\t'        Tab character
+  '\n'        ASCII line feed control character
+  '\r'        ASCII carriage return control character
+  '\u+XXXXXX'
+  '\U+XXXXXX'
+     Between 1 and 6 hexadecimal digits, represented by XXXXXX, are
+     interpreted as the value of a Unicode code point and converted to their
+     respective UTF-8 representation.
+
+
+ A hexadecimal digit is defined as follows:
+
+  hexdigit ::= <digit> | <hexupper> | <hexlower>
+
+  hexupper ::= 'A' | 'B' | 'C' | 'D' | 'E' | 'F'
+
+  hexlower ::= 'a' | 'b' | 'c' | 'd' | 'e' | 'f'
+
+
+ 2.5) Enum literals
+
+ An enum is a set of arbitrary, user defined strings with a user defined
+ mapping to an integer values. The strings are matched as is.
+
+
+ 2.6) MAC address literals
+
+ A MAC address literal is composed of a vendor ID and a device ID, separated
+ by a colon (':'). The vendor and device IDs respectively are made up of 3
+ hexadecimal values between 0 and 255, represented by 2 digits, and seperated
+ by colons:
+
+  macaddress ::= <vendor> ':' <device>
+
+  vendor ::= <hexbyte> ':' <hexbyte> ':' <hexbyte>
+
+  device ::= <hexbyte> ':' <hexbyte> ':' <hexbyte>
+
+  hexbyte ::= <hexdigit> <hexdigit>
+
+
+ 2.7) Size literals
+
+ A size value is a decimal number, followed by an optional scale value:
+
+  size ::= <decimal> [<size_scale>]
+
+ The scale value is matched case insensitively and defined as follows:
+
+  size_scale ::= 'k' | 'm' | 'g' | 't'
+
+ Semantically, the <size_scale> values represent 2^10, 2^20, 2^30 and 2^40
+ respectively. If omitted, no scaling is applied to the size value.
+
+
+ 2.8) Bandwidth literals
+
+ A bandwidth value is similar to a size value but has different scales and
+ an optional suffix:
+
+  bandwidth ::= <decimal> [<bw_scale>] [<bytesuffix> | <bitsuffix>]
+
+ The scale value is matched case insensitively and defined as follows:
+
+  bw_scale ::= <bw_sisufix> | <bw_binsuffix>
+
+  bw_sisuffix ::= 'k' | 'm' | 'g' | 't'
+
+  bw_binsuffix ::= 'ki' | 'mi' | 'gi' | 'ti'
+
+ Semantically, the <bw_sisuffix> values represent 10^3, 10^6, 10^9 and 10^12
+ respectively.
+
+ The <bw_binsuffix> values represent 2^10, 2^20, 2^30 and 2^40 respectively.
+
+ If omitted, no scaling is applied to the bandwidth value.
+
+ The suffix can be one of the following:
+
+  bytesuffix ::= 'bps' | 'B'
+
+  bitsuffix ::= 'bit' | 'b'
+
+ Semantically, the presence of <bytesuffix> caues an additional scaling
+ of the value by a factor of 8.
+
+ The 'bps' and 'bit' strings are matched case insensitively.
+
+
+ 2.9) IPv4 address literals
+
+ An IPv4 address consists of 4 dot seperated, decimal components, followed
+ by an optional, slash seperated CIDR suffix:
+
+  ipv4address ::= <ipv4> ['/' <decimal>]
+
+  ipv4 ::= <decimal> '.' <decimal> '.' <decimal> '.' <decimal>
+
+ Semantically, the first 4 components must be less than or equal to 255 and
+ the CIDR value must be less than or equal to 32.
+
+ If omitted, the CIDR value defaults to 32.
+
+
+ 2.10) IPv6 address literals
+
+ Similarly, an IPv6 address is defined as per RFC3986, followed by an optional
+ CIDR value that must be less than or equal to 128 and defaults to 128 if
+ omitted.
+
+  ipv6address ::= <ipv6> ['/' <decimal>]
+
+  ipv6 ::=                            6(<h16> ':') <ls32>
+         |                       '::' 5(<h16> ':') <ls32>
+         | [              <h16>] '::' 4(<h16> ':') <ls32>
+         | [*1(<h16> ':') <h16>] '::' 3(<h16> ':') <ls32>
+         | [*2(<h16> ':') <h16>] '::' 2(<h16> ':') <ls32>
+         | [*3(<h16> ':') <h16>] '::'   <h16> ':'  <ls32>
+         | [*4(<h16> ':') <h16>] '::'              <ls32>
+         | [*5(<h16> ':') <h16>] '::'              <h16>
+         | [*6(<h16> ':') <h16>] '::'
+
+  h16 ::= <hexdigit> [<hexdigit> [<hexdigit> [<hexdigit>]]]
+
+  ls32 ::= <ipv4> | (<h16> ':' <h16>)
