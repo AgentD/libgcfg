@@ -4,10 +4,9 @@
  *
  * Copyright (C) 2020 David Oberhollenzer <goliath@infraroot.at>
  */
-#include <string.h>
-#include <stdlib.h>
+#include "gcfg.h"
 
-#include "util.h"
+#include <string.h>
 
 static const char *skip_space(const char *ptr)
 {

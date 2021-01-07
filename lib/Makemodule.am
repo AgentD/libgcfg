@@ -1,0 +1,27 @@
+libgcfg_a_SOURCES = include/gcfg.h lib/dec_num.c lib/parse_number.c lib/file.c
+libgcfg_a_SOURCES += lib/number_to_double.c lib/parse_boolean.c lib/xdigit.c
+libgcfg_a_SOURCES += lib/parse_string.c lib/parse_file.c lib/parse_enum.c
+libgcfg_a_SOURCES += lib/parse_size.c lib/is_valid_utf8.c
+libgcfg_a_CPPFLAGS = $(AM_CPPFLAGS)
+libgcfg_a_CFLAGS = $(AM_CFLAGS)
+
+if DISABLE_ALLOC
+libgcfg_a_CPPFLAGS += -DGCFG_DISABLE_ALLOC
+endif
+
+if DISABLE_NETWORK
+libgcfg_a_CPPFLAGS += -DGCFG_DISABLE_NETWORK
+else
+libgcfg_a_SOURCES += lib/ipv4address.c lib/parse_ipv4.c lib/parse_ipv6.c
+libgcfg_a_SOURCES += lib/parse_bandwidth.c lib/parse_mac_addr.c
+endif
+
+if DISABLE_VECTOR
+libgcfg_a_CPPFLAGS += -DGCFG_DISABLE_VECTOR
+else
+libgcfg_a_SOURCES += lib/parse_vector.c
+endif
+
+include_HEADERS += include/gcfg.h
+pkgconfig_DATA += libgcfg0.pc
+lib_LIBRARIES += libgcfg.a

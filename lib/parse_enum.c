@@ -4,10 +4,9 @@
  *
  * Copyright (C) 2020 David Oberhollenzer <goliath@infraroot.at>
  */
-#include <string.h>
-
 #include "gcfg.h"
-#include "util.h"
+
+#include <string.h>
 
 const char *gcfg_parse_enum(gcfg_file_t *f, const char *in,
 			    const gcfg_enum_t *tokens, int *out)

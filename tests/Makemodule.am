@@ -1,0 +1,62 @@
+dec_num_SOURCES = tests/dec_num.c tests/dummy_file.c tests/test.h
+dec_num_LDADD = libgcfg.a
+
+xdigit_SOURCES = tests/xdigit.c tests/test.h
+xdigit_LDADD = libgcfg.a
+
+num_to_double_SOURCES = tests/number_to_double.c tests/test.h
+num_to_double_LDADD = libgcfg.a -lm
+
+parse_number_SOURCES = tests/parse_number.c tests/dummy_file.c tests/test.h
+parse_number_LDADD = libgcfg.a -lm
+
+parse_string_SOURCES = tests/parse_string.c tests/dummy_file.c tests/test.h
+parse_string_LDADD = libgcfg.a
+
+parse_boolean_SOURCES = tests/parse_boolean.c tests/dummy_file.c tests/test.h
+parse_boolean_LDADD = libgcfg.a
+
+parse_size_SOURCES = tests/parse_size.c tests/dummy_file.c tests/test.h
+parse_size_LDADD = libgcfg.a
+
+is_valid_utf8_SOURCES = tests/is_valid_utf8.c tests/test.h
+is_valid_utf8_LDADD = libgcfg.a
+
+check_PROGRAMS += dec_num xdigit num_to_double parse_number parse_string
+check_PROGRAMS += parse_boolean parse_size is_valid_utf8
+
+TESTS += dec_num xdigit num_to_double parse_number parse_string
+TESTS += parse_boolean parse_size is_valid_utf8
+
+if DISABLE_NETWORK
+else
+ipv4address_SOURCES = tests/ipv4address.c tests/dummy_file.c tests/test.h
+ipv4address_LDADD = libgcfg.a
+
+parse_ipv4_SOURCES = tests/parse_ipv4.c tests/dummy_file.c tests/test.h
+parse_ipv4_LDADD = libgcfg.a
+
+parse_ipv6_SOURCES = tests/parse_ipv6.c tests/dummy_file.c tests/test.h
+parse_ipv6_LDADD = libgcfg.a
+
+parse_bandwidth_SOURCES = tests/parse_bandwidth.c tests/dummy_file.c
+parse_bandwidth_SOURCES += tests/test.h
+parse_bandwidth_LDADD = libgcfg.a
+
+parse_mac_addr_SOURCES = tests/parse_mac_addr.c tests/dummy_file.c
+parse_mac_addr_SOURCES += tests/test.h
+parse_mac_addr_LDADD = libgcfg.a
+
+check_PROGRAMS += parse_bandwidth parse_mac_addr parse_ipv4 parse_ipv6
+check_PROGRAMS += ipv4address
+TESTS += ipv4address parse_ipv4 parse_ipv6 parse_bandwidth parse_mac_addr
+endif
+
+if DISABLE_VECTOR
+else
+parse_vector_SOURCES = tests/parse_vector.c tests/dummy_file.c tests/test.h
+parse_vector_LDADD = libgcfg.a
+
+check_PROGRAMS += parse_vector
+TESTS += parse_vector
+endif
