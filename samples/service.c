@@ -100,6 +100,7 @@ static void service_cleanup(service_t *svc)
 			free(exec);
 		}
 
+		free(eblk->interpreter);
 		free(eblk);
 	}
 
