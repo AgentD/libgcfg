@@ -234,8 +234,10 @@ static void *node_port_cb(gcfg_file_t *file, void *parent, const char *name)
 		goto fail;
 
 	port->name = strdup(name);
-	if (port->name == NULL)
+	if (port->name == NULL) {
+		free(port);
 		goto fail;
+	}
 
 	port->owner = node;
 	port->owner_next = node->ports;
@@ -320,8 +322,10 @@ static void *node_cb(gcfg_file_t *file, void *parent, const char *name)
 		goto fail;
 
 	node->name = strdup(name);
-	if (node->name == NULL)
+	if (node->name == NULL) {
+		free(node);
 		goto fail;
+	}
 
 	node->owner = net;
 	node->next = net->nodes;
