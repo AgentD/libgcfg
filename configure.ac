@@ -78,9 +78,15 @@ AC_ARG_ENABLE([network],
 			[Disable support fo network related data type.])],
 	[], [enable_network="yes"])
 
+AC_ARG_ENABLE([stdio],
+	[AS_HELP_STRING([--disable-stdio],
+			[Disable stdio file implementation.])],
+	[], [enable_stdio="yes"])
+
 AM_CONDITIONAL([DISABLE_ALLOC], [test "x$enable_alloc" != "xyes"])
 AM_CONDITIONAL([DISABLE_VECTOR], [test "x$enable_vector" != "xyes"])
 AM_CONDITIONAL([DISABLE_NETWORK], [test "x$enable_network" != "xyes"])
+AM_CONDITIONAL([DISABLE_STDIO], [test "x$enable_stdio" != "xyes"])
 
 AC_SUBST([WARN_CFLAGS])
 
@@ -103,6 +109,7 @@ AC_MSG_RESULT([
 	use malloc:        ${enable_alloc}
 	vector types:      ${enable_vector}
 	network types:     ${enable_network}
+	stdio files:       ${enable_stdio}
 
 	compiler:          ${CC}
 	cflags:            ${CFLAGS}

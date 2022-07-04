@@ -1,19 +1,26 @@
-if DISABLE_NETWORK
-else
 sample_network_SOURCES = samples/network.c
 sample_network_CPPFLAGS = $(AM_CPPFLAGS)
 sample_network_CPPFLAGS += -DCFGPATH=$(top_srcdir)/samples/network.cfg
 sample_network_LDADD = libgcfg.a
 
-check_PROGRAMS += sample_network
-TESTS += sample_network
-endif
-
 sample_service_SOURCES = samples/service.c
 sample_service_CPPFLAGS = $(AM_CPPFLAGS)
 sample_service_CPPFLAGS += -DCFGPATH=$(top_srcdir)/samples/service.cfg
 sample_service_LDADD = libgcfg.a
+
+if DISABLE_NETWORK
+else
+if DISABLE_STDIO
+else
+check_PROGRAMS += sample_network
+TESTS += sample_network
+endif
+endif
+
+if DISABLE_STDIO
+else
 check_PROGRAMS += sample_service
 TESTS += sample_service
+endif
 
 EXTRA_DIST += samples/network.cfg samples/service.cfg
