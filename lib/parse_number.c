@@ -13,7 +13,11 @@ const char *gcfg_parse_number(gcfg_file_t *f, const char *in,
 	uint64_t temp;
 	int i;
 
-	num->sign = (*in == '-') ? -1 : 1;
+	num->flags = 0;
+
+	if (*in == '-')
+		num->flags |= GCFG_NUM_NEGATIVE;
+
 	if (*in == '+' || *in == '-')
 		++in;
 
@@ -54,6 +58,7 @@ const char *gcfg_parse_number(gcfg_file_t *f, const char *in,
 	case '%':
 		++in;
 		num->exponent = -2;
+		num->flags |= GCFG_NUM_PERCENTAGE;
 		break;
 	default:
 		num->exponent = 0;

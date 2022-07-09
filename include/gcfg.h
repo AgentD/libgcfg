@@ -34,6 +34,12 @@ typedef enum {
 	GCFG_ARG_SIZE = 0x0D,
 } GCFG_ARG_TYPE;
 
+typedef enum {
+	GCFG_NUM_NEGATIVE = 0x01,
+
+	GCFG_NUM_PERCENTAGE = 0x02,
+} GCFG_NUMBER_FLAGS;
+
 typedef struct {
 	union {
 		uint32_t v4;
@@ -44,7 +50,7 @@ typedef struct {
 } gcfg_ip_addr_t;
 
 typedef struct {
-	int32_t sign;
+	uint32_t flags;
 	uint32_t integer;
 	uint32_t fraction;
 	uint16_t fraction_digits;

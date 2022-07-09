@@ -14,10 +14,10 @@ static const struct {
 	int pad0[3];
 	double result;
 } test_vec[] = {
-	{ .input = {  1, 13, 37, 2, 0 }, .result = 13.37 },
-	{ .input = { -1, 13, 37, 2, 0 }, .result = -13.37 },
-	{ .input = {  1, 13, 37, 2, 2 }, .result = 1337.0 },
-	{ .input = { -1, 13, 37, 2, 2 }, .result = -1337.0 },
+	{ .input = {                 0, 13, 37, 2, 0 }, .result = 13.37 },
+	{ .input = { GCFG_NUM_NEGATIVE, 13, 37, 2, 0 }, .result = -13.37 },
+	{ .input = {                 0, 13, 37, 2, 2 }, .result = 1337.0 },
+	{ .input = { GCFG_NUM_NEGATIVE, 13, 37, 2, 2 }, .result = -1337.0 },
 };
 
 int main(void)
@@ -34,7 +34,7 @@ int main(void)
 
 		if (diff > 1e-15) {
 			fprintf(stderr, "'%c%u.%0*ue%d' was parsed as %f!\n",
-				test_vec[i].input.sign < 0 ? '-' : '+',
+				(test_vec[i].input.flags & GCFG_NUM_NEGATIVE) ? '-' : '+',
 				test_vec[i].input.integer,
 				(int)test_vec[i].input.fraction_digits,
 				test_vec[i].input.fraction,

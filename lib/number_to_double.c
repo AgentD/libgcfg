@@ -16,5 +16,5 @@ double gcfg_number_to_double(const gcfg_number_t *num)
 	ret += num->fraction * pow(10.0, -((int)num->fraction_digits));
 	ret *= pow(10.0, num->exponent);
 
-	return num->sign < 0 ? -ret : ret;
+	return (num->flags & GCFG_NUM_NEGATIVE) ? -ret : ret;
 }
