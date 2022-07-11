@@ -47,9 +47,14 @@ parse_mac_addr_SOURCES = tests/parse_mac_addr.c tests/dummy_file.c
 parse_mac_addr_SOURCES += tests/test.h
 parse_mac_addr_LDADD = libgcfg.a
 
+parse_uri_SOURCES = tests/parse_uri.c tests/dummy_file.c
+parse_uri_SOURCES += tests/test.h
+parse_uri_LDADD = libgcfg.a
+
 check_PROGRAMS += parse_bandwidth parse_mac_addr parse_ipv4 parse_ipv6
-check_PROGRAMS += ipv4address
+check_PROGRAMS += ipv4address parse_uri
 TESTS += ipv4address parse_ipv4 parse_ipv6 parse_bandwidth parse_mac_addr
+TESTS += parse_uri
 endif
 
 if DISABLE_VECTOR

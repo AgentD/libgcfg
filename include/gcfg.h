@@ -40,6 +40,16 @@ typedef enum {
 	GCFG_NUM_PERCENTAGE = 0x02,
 } GCFG_NUMBER_FLAGS;
 
+typedef enum {
+	GCFG_URI_HAS_PORT = 0x01,
+
+	GCFG_URI_HOST_IPV4 = 0x02,
+
+	GCFG_URI_HOST_IPV6 = 0x04,
+
+	GCFG_URI_HOST_NAME = 0x02,
+} GCFG_URI_FLAGS;
+
 typedef struct {
 	union {
 		uint32_t v4;
@@ -48,6 +58,17 @@ typedef struct {
 
 	uint32_t cidr_mask;
 } gcfg_ip_addr_t;
+
+typedef struct {
+	char *scheme;
+	char *userinfo;
+	char *host;
+	char *path;
+	char *query;
+	char *fragment;
+	uint16_t port;
+	uint16_t flags;
+} gcfg_uri_t;
 
 typedef struct {
 	uint32_t flags;
@@ -238,6 +259,9 @@ const char *gcfg_parse_enum(gcfg_file_t *f, const char *in,
 const char *gcfg_parse_size(gcfg_file_t *f, const char *in, uint64_t *ret);
 
 const char *gcfg_parse_string(gcfg_file_t *f, const char *in, char *out);
+
+const char *gcfg_parse_uri(gcfg_file_t *f, const char *in,
+			   char *buffer, gcfg_uri_t *out);
 
 bool gcfg_is_valid_cp(uint32_t cp);
 

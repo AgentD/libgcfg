@@ -28,6 +28,7 @@ parse_vector
 parse_string
 parse_boolean
 parse_size
+parse_uri
 is_valid_utf8
 num_to_double
 xdigit

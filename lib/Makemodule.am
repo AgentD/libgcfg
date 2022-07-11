@@ -19,6 +19,7 @@ libgcfg_a_CPPFLAGS += -DGCFG_DISABLE_NETWORK
 else
 libgcfg_a_SOURCES += lib/ipv4address.c lib/parse_ipv4.c lib/parse_ipv6.c
 libgcfg_a_SOURCES += lib/parse_bandwidth.c lib/parse_mac_addr.c
+libgcfg_a_SOURCES += lib/parse_uri.c
 endif
 
 if DISABLE_VECTOR
