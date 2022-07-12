@@ -14,10 +14,10 @@ static const struct {
 	int pad0[3];
 	double result;
 } test_vec[] = {
-	{ .input = {                 0, 13, 37, 2, 0 }, .result = 13.37 },
-	{ .input = { GCFG_NUM_NEGATIVE, 13, 37, 2, 0 }, .result = -13.37 },
-	{ .input = {                 0, 13, 37, 2, 2 }, .result = 1337.0 },
-	{ .input = { GCFG_NUM_NEGATIVE, 13, 37, 2, 2 }, .result = -1337.0 },
+	{ .input = { 13, 37, 0, 2, 0 }, .result = 13.37 },
+	{ .input = { 13, 37, 0, 2, GCFG_NUM_NEGATIVE }, .result = -13.37 },
+	{ .input = { 13, 37, 2, 2, 0 }, .result = 1337.0 },
+	{ .input = { 13, 37, 2, 2, GCFG_NUM_NEGATIVE }, .result = -1337.0 },
 };
 
 int main(void)

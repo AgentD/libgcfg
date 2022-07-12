@@ -36,7 +36,7 @@ const char *gcfg_parse_number(gcfg_file_t *f, const char *in,
 		if (in == NULL)
 			return NULL;
 
-		num->fraction_digits = (uint16_t)i;
+		num->fraction_digits = (uint8_t)i;
 		num->fraction = (uint32_t)temp;
 	} else {
 		num->fraction_digits = 0;
