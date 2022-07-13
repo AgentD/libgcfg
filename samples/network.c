@@ -209,12 +209,16 @@ static void *node_port_ip_cb(gcfg_file_t *file, void *parent,
 	return port;
 }
 
-static void *node_port_outlimit(gcfg_file_t *file, void *parent, uint64_t limit)
+static void *node_port_outlimit(gcfg_file_t *file, void *parent,
+				const gcfg_number_t *num, int count)
 {
 	port_t *port = parent;
 	(void)file;
 
-	port->outlimit = limit;
+	if (count != 1 || !(num->flags & GCFG_NUM_BANDWIDTH))
+		return NULL;
+
+	port->outlimit = num->value;
 	return port;
 }
 

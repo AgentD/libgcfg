@@ -61,7 +61,6 @@ static const char *apply_arg(gcfg_file_t *file, const gcfg_keyword_t *kwd,
 	uint32_t vnd, dev;
 	gcfg_ip_addr_t ip;
 #endif
-	uint64_t lval;
 	char *strval;
 	int iret;
 
@@ -95,10 +94,14 @@ static const char *apply_arg(gcfg_file_t *file, const gcfg_keyword_t *kwd,
 		*child_out = kwd->handle.cb_number(file, parent, num, 1);
 		break;
 	case GCFG_ARG_SIZE:
-		ptr = gcfg_parse_size(file, ptr, &lval);
+		num[0].exponent = 0;
+		num[0].flags = GCFG_NUM_SIZE;
+
+		ptr = gcfg_parse_size(file, ptr, &num[0].value);
 		if (ptr == NULL)
 			return NULL;
-		*child_out = kwd->handle.cb_size(file, parent, lval);
+
+		*child_out = kwd->handle.cb_number(file, parent, num, 1);
 		break;
 #ifndef GCFG_DISABLE_VECTOR
 	case GCFG_ARG_VEC2:
@@ -140,10 +143,14 @@ static const char *apply_arg(gcfg_file_t *file, const gcfg_keyword_t *kwd,
 		*child_out = kwd->handle.cb_mac(file, parent, vnd, dev);
 		break;
 	case GCFG_ARG_BANDWIDTH:
-		ptr = gcfg_parse_bandwidth(file, ptr, &lval);
+		num[0].exponent = 0;
+		num[0].flags = GCFG_NUM_BANDWIDTH;
+
+		ptr = gcfg_parse_bandwidth(file, ptr, &num[0].value);
 		if (ptr == NULL)
 			return NULL;
-		*child_out = kwd->handle.cb_bandwidth(file, parent, lval);
+
+		*child_out = kwd->handle.cb_number(file, parent, num, 1);
 		break;
 #endif
 	default:

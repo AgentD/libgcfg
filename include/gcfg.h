@@ -38,6 +38,10 @@ typedef enum {
 	GCFG_NUM_NEGATIVE = 0x01,
 
 	GCFG_NUM_PERCENTAGE = 0x02,
+
+	GCFG_NUM_SIZE = 0x04,
+
+	GCFG_NUM_BANDWIDTH = 0x08,
 } GCFG_NUMBER_FLAGS;
 
 typedef enum {
@@ -119,10 +123,6 @@ typedef struct gcfg_keyword_t {
 			       const gcfg_ip_addr_t *address);
 		void *(*cb_mac)(gcfg_file_t *file, void *parent,
 				uint32_t vendor, uint32_t device);
-		void *(*cb_bandwidth)(gcfg_file_t *file, void *parent,
-				      uint64_t bandwidth);
-		void *(*cb_size)(gcfg_file_t *file, void *parent,
-				 uint64_t size);
 	} handle;
 
 	const struct gcfg_keyword_t *children;
@@ -200,11 +200,11 @@ typedef struct gcfg_keyword_t {
 
 #define GCFG_KEYWORD_BANDWIDTH(kwdname, childlist, callback, finalize) \
 	GCFG_KEYWORD_BASE(kwdname, GCFG_ARG_BANDWIDTH, NULL, childlist, \
-			  .cb_bandwidth, callback, finalize)
+			  .cb_number, callback, finalize)
 
 #define GCFG_KEYWORD_SIZE(kwdname, childlist, callback, finalize) \
 	GCFG_KEYWORD_BASE(kwdname, GCFG_ARG_SIZE, NULL, childlist, \
-			  .cb_size, callback, finalize)
+			  .cb_number, callback, finalize)
 
 #define GCFG_END_KEYWORDS() \
 		{ .name = NULL }, \
