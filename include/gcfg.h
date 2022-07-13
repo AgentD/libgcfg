@@ -45,6 +45,12 @@ typedef enum {
 } GCFG_NUMBER_FLAGS;
 
 typedef enum {
+	GCFG_NET_ADDR_IPV4 = 0x01,
+	GCFG_NET_ADDR_IPV6 = 0x02,
+	GCFG_NET_ADDR_HAVE_MASK = 0x10,
+} GCFG_NET_ADDR_FLAGS;
+
+typedef enum {
 	GCFG_URI_HAS_PORT = 0x01,
 
 	GCFG_URI_HOST_IPV4 = 0x02,
@@ -56,12 +62,13 @@ typedef enum {
 
 typedef struct {
 	union {
-		uint32_t v4;
-		uint16_t v6[8];
-	} ip;
+		uint32_t ipv4;
+		uint16_t ipv6[8];
+	} raw;
 
-	uint32_t cidr_mask;
-} gcfg_ip_addr_t;
+	uint16_t cidr_mask;
+	uint16_t flags;
+} gcfg_net_addr_t;
 
 typedef struct {
 	char *scheme;
@@ -119,8 +126,8 @@ typedef struct gcfg_keyword_t {
 		void *(*cb_enum)(gcfg_file_t *file, void *parent, int value);
 		void *(*cb_number)(gcfg_file_t *file, void *parent,
 				   const gcfg_number_t *num, int count);
-		void *(*cb_ip)(gcfg_file_t *file, void *parent,
-			       const gcfg_ip_addr_t *address);
+		void *(*cb_net)(gcfg_file_t *file, void *parent,
+				const gcfg_net_addr_t *address);
 		void *(*cb_mac)(gcfg_file_t *file, void *parent,
 				uint32_t vendor, uint32_t device);
 	} handle;
@@ -188,11 +195,11 @@ typedef struct gcfg_keyword_t {
 
 #define GCFG_KEYWORD_IPV4(kwdname, childlist, callback, finalize) \
 	GCFG_KEYWORD_BASE(kwdname, GCFG_ARG_IPV4, NULL, childlist, \
-			  .cb_ip, callback, finalize)
+			  .cb_net, callback, finalize)
 
 #define GCFG_KEYWORD_IPV6(kwdname, childlist, callback, finalize) \
 	GCFG_KEYWORD_BASE(kwdname, GCFG_ARG_IPV6, NULL, childlist, \
-			  .cb_ip, callback, finalize)
+			  .cb_net, callback, finalize)
 
 #define GCFG_KEYWORD_MAC(kwdname, childlist, callback, finalize) \
 	GCFG_KEYWORD_BASE(kwdname, GCFG_ARG_MAC_ADDR, NULL, childlist, \
@@ -233,10 +240,10 @@ const char *gcfg_dec_num(gcfg_file_t *f, const char *str,
 const char *gcfg_ipv4address(gcfg_file_t *f, const char *str, uint32_t *out);
 
 const char *gcfg_parse_ipv4(gcfg_file_t *f, const char *in,
-			    gcfg_ip_addr_t *ret);
+			    gcfg_net_addr_t *ret);
 
 const char *gcfg_parse_ipv6(gcfg_file_t *f, const char *in,
-			    gcfg_ip_addr_t *ret);
+			    gcfg_net_addr_t *ret);
 
 const char *gcfg_parse_mac_addr(gcfg_file_t *f, const char *in,
 				uint32_t *vendor, uint32_t *device);

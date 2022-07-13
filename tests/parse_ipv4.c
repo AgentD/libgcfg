@@ -9,18 +9,22 @@
 
 static const struct {
 	const char *in;
-	gcfg_ip_addr_t out;
+	gcfg_net_addr_t out;
 	int ret;
 } testvec[] = {
-	{ "192.168.0.1", { { .v4 = 0xC0A80001 }, 32 }, 0 },
+	{ "192.168.0.1", { { .ipv4 = 0xC0A80001 }, 32, GCFG_NET_ADDR_IPV4 }, 0 },
 	{ "192.168.0", .ret = -1 },
 	{ "192.168", .ret = -1 },
 	{ "192", .ret = -1 },
 	{ "", .ret = -1 },
-	{ "192.168.0.1/32", { { .v4 = 0xC0A80001 }, 32 }, 0 },
-	{ "192.168.0.1/24", { { .v4 = 0xC0A80001 }, 24 }, 0 },
-	{ "192.168.0.1/16", { { .v4 = 0xC0A80001 }, 16 }, 0 },
-	{ "192.168.0.1/0", { { .v4 = 0xC0A80001 }, 0  }, 0 },
+	{ "192.168.0.1/32", { { .ipv4 = 0xC0A80001 }, 32,
+		  GCFG_NET_ADDR_IPV4 | GCFG_NET_ADDR_HAVE_MASK }, 0 },
+	{ "192.168.0.1/24", { { .ipv4 = 0xC0A80001 }, 24,
+		  GCFG_NET_ADDR_IPV4 | GCFG_NET_ADDR_HAVE_MASK }, 0 },
+	{ "192.168.0.1/16", { { .ipv4 = 0xC0A80001 }, 16,
+		  GCFG_NET_ADDR_IPV4 | GCFG_NET_ADDR_HAVE_MASK }, 0 },
+	{ "192.168.0.1/0", { { .ipv4 = 0xC0A80001 }, 0,
+		  GCFG_NET_ADDR_IPV4 | GCFG_NET_ADDR_HAVE_MASK }, 0 },
 	{ "192.168.0.1/35", .ret = -1 },
 	{ "192.168.0.1/-1", .ret = -1 },
 	{ "192.168.0.1/foo", .ret = -1 },
@@ -33,19 +37,19 @@ static const struct {
 	{ "259.512.892.42", .ret = -1 },
 };
 
-static void print_ip(char *buffer, const gcfg_ip_addr_t *ip)
+static void print_ip(char *buffer, const gcfg_net_addr_t *ip)
 {
 	sprintf(buffer, "%d.%d.%d.%d/%u",
-		(int)((ip->ip.v4 >> 24) & 0x00FF),
-		(int)((ip->ip.v4 >> 16) & 0x00FF),
-		(int)((ip->ip.v4 >> 8) & 0x00FF),
-		(int)(ip->ip.v4 & 0x00FF),
+		(int)((ip->raw.ipv4 >> 24) & 0x00FF),
+		(int)((ip->raw.ipv4 >> 16) & 0x00FF),
+		(int)((ip->raw.ipv4 >> 8) & 0x00FF),
+		(int)(ip->raw.ipv4 & 0x00FF),
 		ip->cidr_mask);
 }
 
 static void test_case(gcfg_file_t *df, size_t i)
 {
-	gcfg_ip_addr_t ipout;
+	gcfg_net_addr_t ipout;
 	char buffer[64];
 	const char *ret;
 
@@ -63,7 +67,14 @@ static void test_case(gcfg_file_t *df, size_t i)
 	if (ret == NULL)
 		return;
 
-	if (ipout.ip.v4 != testvec[i].out.ip.v4 ||
+	if (ipout.flags != testvec[i].out.flags) {
+		fprintf(stderr, "Mismatching flags for %zu\n", i);
+		fprintf(stderr, "Expected: %X\n", testvec[i].out.flags);
+		fprintf(stderr, "Received: %X\n", ipout.flags);
+		exit(EXIT_FAILURE);
+	}
+
+	if (ipout.raw.ipv4 != testvec[i].out.raw.ipv4 ||
 	    ipout.cidr_mask != testvec[i].out.cidr_mask) {
 		fprintf(stderr, "Mismatch for %zu\n", i);
 		print_ip(buffer, &testvec[i].out);

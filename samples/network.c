@@ -43,7 +43,7 @@ struct port_t {
 
 	node_t *owner;
 	char *name;
-	gcfg_ip_addr_t ip;
+	gcfg_net_addr_t ip;
 
 	PORT_CONNECTION_TYPE con_type;
 	uint64_t outlimit;
@@ -64,7 +64,7 @@ struct node_t {
 	port_t *nat_port;
 	bool forwarding;
 
-	gcfg_ip_addr_t gateway;
+	gcfg_net_addr_t gateway;
 };
 
 struct network_t {
@@ -200,7 +200,7 @@ static void *node_port_connect_cb(gcfg_file_t *file, void *parent,
 }
 
 static void *node_port_ip_cb(gcfg_file_t *file, void *parent,
-			     const gcfg_ip_addr_t *ip)
+			     const gcfg_net_addr_t *ip)
 {
 	port_t *port = parent;
 	(void)file;
@@ -254,7 +254,7 @@ fail:
 }
 
 static void *node_default_gw_cb(gcfg_file_t *file, void *parent,
-				const gcfg_ip_addr_t *ip)
+				const gcfg_net_addr_t *ip)
 {
 	node_t *node = parent;
 	(void)file;
@@ -438,10 +438,10 @@ int main(void)
 		printf("Node %s:\n", n->name);
 
 		printf("\tGateway: %u.%u.%u.%u/%u\n",
-		       (n->gateway.ip.v4 >> 24) & 0xFF,
-		       (n->gateway.ip.v4 >> 16) & 0xFF,
-		       (n->gateway.ip.v4 >> 8) & 0xFF,
-		       n->gateway.ip.v4 & 0xFF,
+		       (n->gateway.raw.ipv4 >> 24) & 0xFF,
+		       (n->gateway.raw.ipv4 >> 16) & 0xFF,
+		       (n->gateway.raw.ipv4 >> 8) & 0xFF,
+		       n->gateway.raw.ipv4 & 0xFF,
 		       n->gateway.cidr_mask);
 
 		if (n->forwarding)
@@ -456,10 +456,10 @@ int main(void)
 
 		for (p = n->ports; p != NULL; p = p->owner_next) {
 			printf("\t\t%s %u.%u.%u.%u/%u", p->name,
-			       (p->ip.ip.v4 >> 24) & 0xFF,
-			       (p->ip.ip.v4 >> 16) & 0xFF,
-			       (p->ip.ip.v4 >> 8) & 0xFF,
-			       p->ip.ip.v4 & 0xFF,
+			       (p->ip.raw.ipv4 >> 24) & 0xFF,
+			       (p->ip.raw.ipv4 >> 16) & 0xFF,
+			       (p->ip.raw.ipv4 >> 8) & 0xFF,
+			       p->ip.raw.ipv4 & 0xFF,
 			       p->ip.cidr_mask);
 
 			if (p->outlimit > 0)

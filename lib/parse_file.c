@@ -59,7 +59,7 @@ static const char *apply_arg(gcfg_file_t *file, const gcfg_keyword_t *kwd,
 	gcfg_number_t num[4];
 #ifndef GCFG_DISABLE_NETWORK
 	uint32_t vnd, dev;
-	gcfg_ip_addr_t ip;
+	gcfg_net_addr_t ip;
 #endif
 	char *strval;
 	int iret;
@@ -128,13 +128,13 @@ static const char *apply_arg(gcfg_file_t *file, const gcfg_keyword_t *kwd,
 		ptr = gcfg_parse_ipv4(file, ptr, &ip);
 		if (ptr == NULL)
 			return NULL;
-		*child_out = kwd->handle.cb_ip(file, parent, &ip);
+		*child_out = kwd->handle.cb_net(file, parent, &ip);
 		break;
 	case GCFG_ARG_IPV6:
 		ptr = gcfg_parse_ipv6(file, ptr, &ip);
 		if (ptr == NULL)
 			return NULL;
-		*child_out = kwd->handle.cb_ip(file, parent, &ip);
+		*child_out = kwd->handle.cb_net(file, parent, &ip);
 		break;
 	case GCFG_ARG_MAC_ADDR:
 		ptr = gcfg_parse_mac_addr(file, ptr, &vnd, &dev);

@@ -9,31 +9,37 @@
 
 static const struct {
 	const char *in;
-	gcfg_ip_addr_t out;
+	gcfg_net_addr_t out;
 	int ret;
 } testvec[] = {
-	{ "::", { { .v6 = {0,0,0,0,0,0,0,0} }, 128 }, 0 },
-	{ "::/32",  { { .v6 = {0,0,0,0,0,0,0,0} }, 32 }, 0 },
-	{ "::1", { { .v6 = {0,0,0,0,0,0,0,1} }, 128 }, 0 },
-	{ "::1/32", { { .v6 = {0,0,0,0,0,0,0,1} }, 32 }, 0 },
+	{ "::", { { .ipv6 = {0,0,0,0,0,0,0,0} }, 128, GCFG_NET_ADDR_IPV6 }, 0 },
+	{ "::/32",  { { .ipv6 = {0,0,0,0,0,0,0,0} }, 32,
+		  GCFG_NET_ADDR_IPV6 | GCFG_NET_ADDR_HAVE_MASK }, 0 },
+	{ "::1", { { .ipv6 = {0,0,0,0,0,0,0,1} }, 128, GCFG_NET_ADDR_IPV6 }, 0 },
+	{ "::1/32", { { .ipv6 = {0,0,0,0,0,0,0,1} }, 32,
+		  GCFG_NET_ADDR_IPV6 | GCFG_NET_ADDR_HAVE_MASK }, 0 },
 	{ "::1/-1", .ret = -1 },
 	{ "::1/130", .ret = -1 },
-	{ "ffff::192.168.0.1/64", { { .v6 = {0xFFFF,0,0,0,0,0,0xC0A8,1} }, 64 }, 0 },
-	{ "2001:41d0:52:cff::1714", { { .v6 = {0x2001,0x41D0,0x52,0xCFF,0,0,0,0x1714} }, 128 }, 0 },
+	{ "ffff::192.168.0.1/64", { { .ipv6 = {0xFFFF,0,0,0,0,0,0xC0A8,1} }, 64,
+		  GCFG_NET_ADDR_IPV6 | GCFG_NET_ADDR_HAVE_MASK }, 0 },
+	{ "2001:41d0:52:cff::1714", { { .ipv6 = {0x2001,0x41D0,0x52,0xCFF,0,0,0,0x1714} },
+		  128, GCFG_NET_ADDR_IPV6 }, 0 },
 	{ "ffff:::192.168.0.1/64", .ret = -1 },
 };
 
-static void print_ip(char *buffer, const gcfg_ip_addr_t *ip)
+static void print_ip(char *buffer, const gcfg_net_addr_t *ip)
 {
 	sprintf(buffer, "%04X:%04X:%04X:%04X:%04X:%04X:%04X:%04X/%u",
-		ip->ip.v6[0], ip->ip.v6[1], ip->ip.v6[2], ip->ip.v6[3],
-		ip->ip.v6[4], ip->ip.v6[5], ip->ip.v6[6], ip->ip.v6[7],
+		ip->raw.ipv6[0], ip->raw.ipv6[1],
+		ip->raw.ipv6[2], ip->raw.ipv6[3],
+		ip->raw.ipv6[4], ip->raw.ipv6[5],
+		ip->raw.ipv6[6], ip->raw.ipv6[7],
 		ip->cidr_mask);
 }
 
 static void test_case(gcfg_file_t *df, size_t i)
 {
-	gcfg_ip_addr_t ipout;
+	gcfg_net_addr_t ipout;
 	char buffer[128];
 	const char *ret;
 
@@ -51,7 +57,14 @@ static void test_case(gcfg_file_t *df, size_t i)
 	if (ret == NULL)
 		return;
 
-	if (memcmp(ipout.ip.v6, testvec[i].out.ip.v6, 16) != 0 ||
+	if (ipout.flags != testvec[i].out.flags) {
+		fprintf(stderr, "Mismatching flags for %zu\n", i);
+		fprintf(stderr, "Expected: %X\n", testvec[i].out.flags);
+		fprintf(stderr, "Received: %X\n", ipout.flags);
+		exit(EXIT_FAILURE);
+	}
+
+	if (memcmp(ipout.raw.ipv6, testvec[i].out.raw.ipv6, 16) != 0 ||
 	    ipout.cidr_mask != testvec[i].out.cidr_mask) {
 		fprintf(stderr, "Mismatch for %zu\n", i);
 		print_ip(buffer, &testvec[i].out);

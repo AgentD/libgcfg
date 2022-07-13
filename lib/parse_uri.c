@@ -131,7 +131,7 @@ static const char *hostname(gcfg_file_t *f, const char *in,
 	uri->host = out;
 
 	if (*in == '[') {
-		gcfg_ip_addr_t temp;
+		gcfg_net_addr_t temp;
 
 		++in;
 
