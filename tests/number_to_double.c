@@ -14,10 +14,12 @@ static const struct {
 	int pad0[3];
 	double result;
 } test_vec[] = {
-	{ .input = { 13, 37, 0, 2, 0 }, .result = 13.37 },
-	{ .input = { 13, 37, 0, 2, GCFG_NUM_NEGATIVE }, .result = -13.37 },
-	{ .input = { 13, 37, 2, 2, 0 }, .result = 1337.0 },
-	{ .input = { 13, 37, 2, 2, GCFG_NUM_NEGATIVE }, .result = -1337.0 },
+	{ .input = { 1337, 0, 0 }, .result = 1337.0 },
+	{ .input = { 1337, 0, GCFG_NUM_NEGATIVE }, .result = -1337.0 },
+	{ .input = { 1337, -2, 0 }, .result = 13.37 },
+	{ .input = { 1337, -2, GCFG_NUM_NEGATIVE }, .result = -13.37 },
+	{ .input = { 42, 2, 0 }, .result = 4200.0 },
+	{ .input = { 42, 2, GCFG_NUM_NEGATIVE }, .result = -4200.0 },
 };
 
 int main(void)
@@ -32,14 +34,13 @@ int main(void)
 
 		diff = fabs(expected - ret);
 
-		if (diff > 1e-15) {
-			fprintf(stderr, "'%c%u.%0*ue%d' was parsed as %f!\n",
+		if (diff > 1e-10) {
+			fprintf(stderr, "'%c%lue%d' was converted "
+				"to %f instead of %f (diff %f)!\n",
 				(test_vec[i].input.flags & GCFG_NUM_NEGATIVE) ? '-' : '+',
-				test_vec[i].input.integer,
-				(int)test_vec[i].input.fraction_digits,
-				test_vec[i].input.fraction,
+				(unsigned long)test_vec[i].input.value,
 				test_vec[i].input.exponent,
-				ret);
+				ret, expected, diff);
 			return EXIT_FAILURE;
 		}
 	}

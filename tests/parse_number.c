@@ -16,31 +16,31 @@ static const struct {
 	{ "", .ret = -1 },
 	{ "+", .ret = -1 },
 	{ "-", .ret = -1 },
-	{ "13", {13,0,0,0,0}, 13.0, 0 },
-	{ "+13", {13,0,0,0,0}, 13.0, 0 },
-	{ "-13", {13,0,0,0,GCFG_NUM_NEGATIVE}, -13.0, 0 },
-	{ "13.37", {13,37,0,2,0}, 13.37, 0 },
-	{ "+13.37", {13,37,0,2,0}, 13.37, 0 },
-	{ "-13.37", {13,37,0,2,GCFG_NUM_NEGATIVE}, -13.37, 0 },
-	{ "13%", {13,0,-2,0,GCFG_NUM_PERCENTAGE}, .13, 0 },
-	{ "+13%", {13,0,-2,0,GCFG_NUM_PERCENTAGE}, .13, 0 },
-	{ "-13%", {13,0,-2,0,GCFG_NUM_PERCENTAGE | GCFG_NUM_NEGATIVE}, -.13, 0 },
-	{ "13.37%", {13,37,-2,2,GCFG_NUM_PERCENTAGE}, .1337, 0 },
-	{ "+13.37%", {13,37,-2,2,GCFG_NUM_PERCENTAGE}, .1337, 0 },
-	{ "-13.37%", {13,37,-2,2,GCFG_NUM_PERCENTAGE | GCFG_NUM_NEGATIVE}, -.1337, 0 },
-	{ "13e-42", {13,0,-42,0,0}, 13e-42, 0 },
-	{ "+13e+42", {13,0,42,0,0}, 13e42, 0 },
-	{ "-13e-42", {13,0,-42,0,GCFG_NUM_NEGATIVE}, -13e-42, 0 },
-	{ "13.37e-42", {13,37,-42,2,0}, 13.37e-42, 0 },
-	{ "+13.37e42", {13,37,42,2,0}, 13.37e42, 0 },
-	{ "-13.37e-42", {13,37,-42,2,GCFG_NUM_NEGATIVE}, -13.37e-42, 0 },
+	{ "13", {13,0,0}, 13.0, 0 },
+	{ "+13", {13,0,0}, 13.0, 0 },
+	{ "-13", {13,0,GCFG_NUM_NEGATIVE}, -13.0, 0 },
+	{ "13.37", {1337,-2,0}, 13.37, 0 },
+	{ "+13.37", {1337,-2,0}, 13.37, 0 },
+	{ "-13.37", {1337,-2,GCFG_NUM_NEGATIVE}, -13.37, 0 },
+	{ "13%", {13,-2,GCFG_NUM_PERCENTAGE}, .13, 0 },
+	{ "+13%", {13,-2,GCFG_NUM_PERCENTAGE}, .13, 0 },
+	{ "-13%", {13,-2,GCFG_NUM_PERCENTAGE | GCFG_NUM_NEGATIVE}, -.13, 0 },
+	{ "13.37%", {1337,-4,GCFG_NUM_PERCENTAGE}, .1337, 0 },
+	{ "+13.37%", {1337,-4,GCFG_NUM_PERCENTAGE}, .1337, 0 },
+	{ "-13.37%", {1337,-4,GCFG_NUM_PERCENTAGE | GCFG_NUM_NEGATIVE}, -.1337, 0 },
+	{ "13e-42", {13,-42,0}, 13e-42, 0 },
+	{ "+13e+42", {13,42,0}, 13e42, 0 },
+	{ "-13e-42", {13,-42,GCFG_NUM_NEGATIVE}, -13e-42, 0 },
+	{ "13.37e-42", {1337,-44,0}, 13.37e-42, 0 },
+	{ "+13.37e42", {1337,40,0}, 13.37e42, 0 },
+	{ "-13.37e-42", {1337,-44,GCFG_NUM_NEGATIVE}, -13.37e-42, 0 },
 };
 
 static void print_num(char *buffer, const gcfg_number_t *out)
 {
-	sprintf(buffer, "%c%u.%u * 10^%d",
+	sprintf(buffer, "%c%lu * 10^%d",
 		(out->flags & GCFG_NUM_NEGATIVE) ? '+' : '-',
-		out->integer, out->fraction, out->exponent);
+		(unsigned long)out->value, out->exponent);
 }
 
 static int dbl_cmp(double a, double b)

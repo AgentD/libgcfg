@@ -71,11 +71,9 @@ typedef struct {
 } gcfg_uri_t;
 
 typedef struct {
-	uint32_t integer;
-	uint32_t fraction;
-	int16_t exponent;
-	uint8_t fraction_digits;
-	uint8_t flags;
+	uint64_t value;
+	int32_t exponent;
+	uint32_t flags;
 } gcfg_number_t;
 
 typedef struct {
