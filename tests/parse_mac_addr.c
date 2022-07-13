@@ -31,11 +31,11 @@ static void print_mac(char *buffer, uint32_t vendor, uint32_t device)
 
 static void test_case(gcfg_file_t *df, size_t i)
 {
-	uint32_t vendor, device;
+	gcfg_net_addr_t net;
 	char buffer[64];
 	const char *ret;
 
-	ret = gcfg_parse_mac_addr(df, testvec[i].in, &vendor, &device);
+	ret = gcfg_parse_mac_addr(df, testvec[i].in, &net);
 
 	if ((ret == NULL && testvec[i].ret == 0) ||
 	    (ret != NULL && testvec[i].ret != 0)) {
@@ -49,11 +49,18 @@ static void test_case(gcfg_file_t *df, size_t i)
 	if (ret == NULL)
 		return;
 
-	if (testvec[i].vendor != vendor || testvec[i].device != device) {
+	if (net.flags != GCFG_NET_ADDR_MAC) {
+		fprintf(stderr, "Address %zu (%s) has a wrong type (%u)\n",
+			i, testvec[i].in, net.flags);
+		print_mac(buffer, testvec[i].vendor, testvec[i].device);
+	}
+
+	if (testvec[i].vendor != net.raw.mac.vendor ||
+	    testvec[i].device != net.raw.mac.device) {
 		fprintf(stderr, "Mismatch for %zu\n", i);
 		print_mac(buffer, testvec[i].vendor, testvec[i].device);
 		fprintf(stderr, "Expected: %s\n", buffer);
-		print_mac(buffer, vendor, device);
+		print_mac(buffer, net.raw.mac.vendor, net.raw.mac.device);
 		fprintf(stderr, "Received: %s\n", buffer);
 		exit(EXIT_FAILURE);
 	}

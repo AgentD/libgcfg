@@ -47,6 +47,7 @@ typedef enum {
 typedef enum {
 	GCFG_NET_ADDR_IPV4 = 0x01,
 	GCFG_NET_ADDR_IPV6 = 0x02,
+	GCFG_NET_ADDR_MAC = 0x04,
 	GCFG_NET_ADDR_HAVE_MASK = 0x10,
 } GCFG_NET_ADDR_FLAGS;
 
@@ -64,6 +65,11 @@ typedef struct {
 	union {
 		uint32_t ipv4;
 		uint16_t ipv6[8];
+
+		struct {
+			uint32_t vendor;
+			uint32_t device;
+		} mac;
 	} raw;
 
 	uint16_t cidr_mask;
@@ -128,8 +134,6 @@ typedef struct gcfg_keyword_t {
 				   const gcfg_number_t *num, int count);
 		void *(*cb_net)(gcfg_file_t *file, void *parent,
 				const gcfg_net_addr_t *address);
-		void *(*cb_mac)(gcfg_file_t *file, void *parent,
-				uint32_t vendor, uint32_t device);
 	} handle;
 
 	const struct gcfg_keyword_t *children;
@@ -203,7 +207,7 @@ typedef struct gcfg_keyword_t {
 
 #define GCFG_KEYWORD_MAC(kwdname, childlist, callback, finalize) \
 	GCFG_KEYWORD_BASE(kwdname, GCFG_ARG_MAC_ADDR, NULL, childlist, \
-			  .cb_mac, callback, finalize)
+			  .cb_net, callback, finalize)
 
 #define GCFG_KEYWORD_BANDWIDTH(kwdname, childlist, callback, finalize) \
 	GCFG_KEYWORD_BASE(kwdname, GCFG_ARG_BANDWIDTH, NULL, childlist, \
@@ -246,7 +250,7 @@ const char *gcfg_parse_ipv6(gcfg_file_t *f, const char *in,
 			    gcfg_net_addr_t *ret);
 
 const char *gcfg_parse_mac_addr(gcfg_file_t *f, const char *in,
-				uint32_t *vendor, uint32_t *device);
+				gcfg_net_addr_t *ret);
 
 const char *gcfg_parse_bandwidth(gcfg_file_t *f, const char *in, uint64_t *ret);
 
