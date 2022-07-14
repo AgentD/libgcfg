@@ -35,8 +35,6 @@ typedef enum {
 } GCFG_ARG_TYPE;
 
 typedef enum {
-	GCFG_NUM_NEGATIVE = 0x01,
-
 	GCFG_NUM_PERCENTAGE = 0x02,
 } GCFG_NUMBER_FLAGS;
 
@@ -103,7 +101,7 @@ typedef struct {
 } gcfg_uri_t;
 
 typedef struct {
-	uint64_t value;
+	int64_t value;
 	int32_t exponent;
 	uint32_t flags;
 } gcfg_number_t;

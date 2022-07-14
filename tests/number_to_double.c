@@ -15,11 +15,11 @@ static const struct {
 	double result;
 } test_vec[] = {
 	{ .input = { 1337, 0, 0 }, .result = 1337.0 },
-	{ .input = { 1337, 0, GCFG_NUM_NEGATIVE }, .result = -1337.0 },
+	{ .input = { -1337, 0, 0 }, .result = -1337.0 },
 	{ .input = { 1337, -2, 0 }, .result = 13.37 },
-	{ .input = { 1337, -2, GCFG_NUM_NEGATIVE }, .result = -13.37 },
+	{ .input = { -1337, -2, 0 }, .result = -13.37 },
 	{ .input = { 42, 2, 0 }, .result = 4200.0 },
-	{ .input = { 42, 2, GCFG_NUM_NEGATIVE }, .result = -4200.0 },
+	{ .input = { -42, 2, 0 }, .result = -4200.0 },
 };
 
 int main(void)
@@ -35,10 +35,9 @@ int main(void)
 		diff = fabs(expected - ret);
 
 		if (diff > 1e-10) {
-			fprintf(stderr, "'%c%lue%d' was converted "
+			fprintf(stderr, "'%lde%d' was converted "
 				"to %f instead of %f (diff %f)!\n",
-				(test_vec[i].input.flags & GCFG_NUM_NEGATIVE) ? '-' : '+',
-				(unsigned long)test_vec[i].input.value,
+				(long)test_vec[i].input.value,
 				test_vec[i].input.exponent,
 				ret, expected, diff);
 			return EXIT_FAILURE;

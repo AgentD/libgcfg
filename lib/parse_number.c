@@ -10,6 +10,7 @@
 const char *gcfg_parse_number(gcfg_file_t *f, const char *in,
 			      gcfg_number_t *num)
 {
+	bool negative = false;
 	int32_t exponent;
 	uint64_t temp;
 	int i;
@@ -18,19 +19,21 @@ const char *gcfg_parse_number(gcfg_file_t *f, const char *in,
 	num->exponent = 0;
 
 	if (*in == '-')
-		num->flags |= GCFG_NUM_NEGATIVE;
+		negative = true;
 
 	if (*in == '+' || *in == '-')
 		++in;
 
-	in = gcfg_dec_num(f, in, &num->value, 0xFFFFFFFFFFFFFFFF);
+	in = gcfg_dec_num(f, in, &temp, 0x7FFFFFFFFFFFFFFF);
 	if (in == NULL)
 		return NULL;
+
+	num->value = (int64_t)temp;
 
 	if (*in == '.') {
 		++in;
 		for (i = 0; in[i] >= '0' && in[i] <= '9'; ++i) {
-			if (num->value >= (0xFFFFFFFFFFFFFFFFUL / 10))
+			if (num->value >= (0x7FFFFFFFFFFFFFFFL / 10))
 				goto fail_fract;
 			if (num->exponent == INT32_MIN)
 				goto fail_fract;
@@ -39,12 +42,15 @@ const char *gcfg_parse_number(gcfg_file_t *f, const char *in,
 			num->exponent--;
 		}
 
-		in = gcfg_dec_num(f, in, &temp, 0xFFFFFFFFFFFFFFFF);
+		in = gcfg_dec_num(f, in, &temp, 0x7FFFFFFFFFFFFFFF);
 		if (in == NULL)
 			return NULL;
 
-		num->value += temp;
+		num->value += (int64_t)temp;
 	}
+
+	if (negative)
+		num->value = -(num->value);
 
 	switch (*in) {
 	case 'e':
