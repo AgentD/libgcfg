@@ -21,7 +21,8 @@ static const struct {
 	{ "false", 5, 0 },
 };
 
-const char *gcfg_parse_boolean(gcfg_file_t *f, const char *in, int *out)
+const char *gcfg_parse_boolean(gcfg_file_t *f, const char *in,
+			       gcfg_value_t *out)
 {
 	size_t i, len;
 
@@ -34,7 +35,10 @@ const char *gcfg_parse_boolean(gcfg_file_t *f, const char *in, int *out)
 		if (in[len] != ' ' && in[len] != '\t' && in[len] != '\0')
 			continue;
 
-		*out = (int)mapping[i].value;
+		out->type = GCFG_VALUE_BOOLEAN;
+		out->flags = 0;
+		out->cidr_mask = 0;
+		out->data.boolean = (mapping[i].value != 0);
 		return in + len;
 	}
 

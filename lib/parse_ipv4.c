@@ -7,15 +7,16 @@
 #include "gcfg.h"
 
 const char *gcfg_parse_ipv4(gcfg_file_t *f, const char *in,
-			    gcfg_net_addr_t *ret)
+			    gcfg_value_t *ret)
 {
 	uint64_t temp;
 
-	in = gcfg_ipv4address(f, in, &ret->raw.ipv4);
+	in = gcfg_ipv4address(f, in, &ret->data.ipv4);
 	if (in == NULL)
 		return NULL;
 
-	ret->flags = GCFG_NET_ADDR_IPV4;
+	ret->type = GCFG_VALUE_IPV4;
+	ret->flags = 0;
 
 	if (*in == ' ' || *in == '\t' || *in == '\0') {
 		ret->cidr_mask = 32;

@@ -7,7 +7,7 @@
 #include "gcfg.h"
 
 const char *gcfg_parse_mac_addr(gcfg_file_t *f, const char *in,
-				gcfg_net_addr_t *ret)
+				gcfg_value_t *ret)
 {
 	const char *start = in;
 	uint64_t val = 0;
@@ -26,10 +26,11 @@ const char *gcfg_parse_mac_addr(gcfg_file_t *f, const char *in,
 		in += 2;
 	}
 
-	ret->raw.mac.vendor = (val >> 24) & 0x00FFFFFF;
-	ret->raw.mac.device =  val        & 0x00FFFFFF;
-	ret->cidr_mask      = 0;
-	ret->flags          = GCFG_NET_ADDR_MAC;
+	ret->data.mac.vendor = (val >> 24) & 0x00FFFFFF;
+	ret->data.mac.device =  val        & 0x00FFFFFF;
+	ret->cidr_mask       = 0;
+	ret->type            = GCFG_VALUE_MAC;
+	ret->flags           = 0;
 	return in;
 fail:
 	f->report_error(f, "invalid MAC address '%.*s...'",

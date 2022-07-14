@@ -6,12 +6,13 @@
  */
 #include "gcfg.h"
 
-const char *gcfg_parse_size(gcfg_file_t *f, const char *in, uint64_t *ret)
+const char *gcfg_parse_size(gcfg_file_t *f, const char *in,
+			    gcfg_value_t *ret)
 {
 	const char *start = in;
-	uint64_t shift;
+	uint64_t value, shift;
 
-	in = gcfg_dec_num(f, in, ret, 0xFFFFFFFFFFFFFFFF);
+	in = gcfg_dec_num(f, in, &value, 0xFFFFFFFFFFFFFFFF);
 	if (in == NULL)
 		return NULL;
 
@@ -41,11 +42,14 @@ const char *gcfg_parse_size(gcfg_file_t *f, const char *in, uint64_t *ret)
 		break;
 	}
 
-	if ((*ret) > (0xFFFFFFFFFFFFFFFFUL >> shift)) {
+	if (value > (0xFFFFFFFFFFFFFFFFUL >> shift)) {
 		f->report_error(f, "numeric overflow in %.6s...", start);
 		return NULL;
 	}
 
-	(*ret) <<= shift;
+	ret->data.size = value << shift;
+	ret->flags = 0;
+	ret->cidr_mask = 0;
+	ret->type = GCFG_VALUE_SIZE;
 	return in;
 }

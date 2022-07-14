@@ -43,7 +43,7 @@ struct port_t {
 
 	node_t *owner;
 	char *name;
-	gcfg_net_addr_t ip;
+	gcfg_value_t ip;
 
 	PORT_CONNECTION_TYPE con_type;
 	uint64_t outlimit;
@@ -64,7 +64,7 @@ struct node_t {
 	port_t *nat_port;
 	bool forwarding;
 
-	gcfg_net_addr_t gateway;
+	gcfg_value_t gateway;
 };
 
 struct network_t {
@@ -168,8 +168,9 @@ static port_t *port_from_global_name(gcfg_file_t *file, network_t *net,
 /************************* config parsing functions **************************/
 
 static void *node_port_connect_cb(gcfg_file_t *file, void *parent,
-				  const char *str)
+				  const gcfg_value_t *value)
 {
+	const char *str = value->data.string;
 	port_t *port = parent;
 	network_t *net = port->owner->owner;
 	port_t *remote;
@@ -200,7 +201,7 @@ static void *node_port_connect_cb(gcfg_file_t *file, void *parent,
 }
 
 static void *node_port_ip_cb(gcfg_file_t *file, void *parent,
-			     const gcfg_net_addr_t *ip)
+			     const gcfg_value_t *ip)
 {
 	port_t *port = parent;
 	(void)file;
@@ -210,20 +211,19 @@ static void *node_port_ip_cb(gcfg_file_t *file, void *parent,
 }
 
 static void *node_port_outlimit(gcfg_file_t *file, void *parent,
-				const gcfg_number_t *num, int count)
+				const gcfg_value_t *bw)
 {
 	port_t *port = parent;
 	(void)file;
 
-	if (count != 1 || !(num->flags & GCFG_NUM_BANDWIDTH))
-		return NULL;
-
-	port->outlimit = num->value;
+	port->outlimit = bw->data.bandwidth;
 	return port;
 }
 
-static void *node_port_cb(gcfg_file_t *file, void *parent, const char *name)
+static void *node_port_cb(gcfg_file_t *file, void *parent,
+			  const gcfg_value_t *value)
 {
+	const char *name = value->data.string;
 	node_t *node = parent;
 	port_t *port;
 
@@ -254,7 +254,7 @@ fail:
 }
 
 static void *node_default_gw_cb(gcfg_file_t *file, void *parent,
-				const gcfg_net_addr_t *ip)
+				const gcfg_value_t *ip)
 {
 	node_t *node = parent;
 	(void)file;
@@ -263,17 +263,20 @@ static void *node_default_gw_cb(gcfg_file_t *file, void *parent,
 	return node;
 }
 
-static void *node_forwarding_cb(gcfg_file_t *file, void *parent, bool enable)
+static void *node_forwarding_cb(gcfg_file_t *file, void *parent,
+				const gcfg_value_t *val)
 {
 	node_t *node = parent;
 	(void)file;
 
-	node->forwarding = enable;
+	node->forwarding = val->data.boolean;
 	return node;
 }
 
-static void *node_nat_cb(gcfg_file_t *file, void *parent, const char *out_if)
+static void *node_nat_cb(gcfg_file_t *file, void *parent,
+			 const gcfg_value_t *value)
 {
+	const char *out_if = value->data.string;
 	node_t *node = parent;
 	port_t *port;
 
@@ -287,8 +290,10 @@ static void *node_nat_cb(gcfg_file_t *file, void *parent, const char *out_if)
 	return node;
 }
 
-static void *switch_port_cb(gcfg_file_t *file, void *parent, const char *str)
+static void *switch_port_cb(gcfg_file_t *file, void *parent,
+			    const gcfg_value_t *value)
 {
+	const char *str = value->data.string;
 	switch_t *sw = parent;
 	network_t *net = sw->owner;
 	port_t *port;
@@ -311,8 +316,10 @@ static void *switch_port_cb(gcfg_file_t *file, void *parent, const char *str)
 	return sw;
 }
 
-static void *node_cb(gcfg_file_t *file, void *parent, const char *name)
+static void *node_cb(gcfg_file_t *file, void *parent,
+		     const gcfg_value_t *value)
 {
+	const char *name = value->data.string;
 	network_t *net = parent;
 	node_t *node;
 
@@ -354,10 +361,12 @@ static int node_finalize(gcfg_file_t *file, void *obj)
 	return 0;
 }
 
-static void *switch_cb(gcfg_file_t *file, void *parent)
+static void *switch_cb(gcfg_file_t *file, void *parent,
+		       const gcfg_value_t *value)
 {
 	network_t *net = parent;
 	switch_t *sw;
+	(void)value;
 
 	sw = calloc(1, sizeof(*sw));
 	if (sw == NULL) {
@@ -438,10 +447,10 @@ int main(void)
 		printf("Node %s:\n", n->name);
 
 		printf("\tGateway: %u.%u.%u.%u/%u\n",
-		       (n->gateway.raw.ipv4 >> 24) & 0xFF,
-		       (n->gateway.raw.ipv4 >> 16) & 0xFF,
-		       (n->gateway.raw.ipv4 >> 8) & 0xFF,
-		       n->gateway.raw.ipv4 & 0xFF,
+		       (n->gateway.data.ipv4 >> 24) & 0xFF,
+		       (n->gateway.data.ipv4 >> 16) & 0xFF,
+		       (n->gateway.data.ipv4 >> 8) & 0xFF,
+		       n->gateway.data.ipv4 & 0xFF,
 		       n->gateway.cidr_mask);
 
 		if (n->forwarding)
@@ -456,10 +465,10 @@ int main(void)
 
 		for (p = n->ports; p != NULL; p = p->owner_next) {
 			printf("\t\t%s %u.%u.%u.%u/%u", p->name,
-			       (p->ip.raw.ipv4 >> 24) & 0xFF,
-			       (p->ip.raw.ipv4 >> 16) & 0xFF,
-			       (p->ip.raw.ipv4 >> 8) & 0xFF,
-			       p->ip.raw.ipv4 & 0xFF,
+			       (p->ip.data.ipv4 >> 24) & 0xFF,
+			       (p->ip.data.ipv4 >> 16) & 0xFF,
+			       (p->ip.data.ipv4 >> 8) & 0xFF,
+			       p->ip.data.ipv4 & 0xFF,
 			       p->ip.cidr_mask);
 
 			if (p->outlimit > 0)

@@ -9,7 +9,7 @@
 #include <string.h>
 
 const char *gcfg_parse_enum(gcfg_file_t *f, const char *in,
-			    const gcfg_enum_t *tokens, int *out)
+			    const gcfg_enum_t *tokens, gcfg_value_t *out)
 {
 	size_t i, len;
 
@@ -29,6 +29,9 @@ const char *gcfg_parse_enum(gcfg_file_t *f, const char *in,
 		return NULL;
 	}
 
-	*out = (int)tokens[i].value;
+	out->type = GCFG_VALUE_ENUM;
+	out->flags = 0;
+	out->cidr_mask = 0;
+	out->data.enum_value = tokens[i].value;
 	return in + len;
 }

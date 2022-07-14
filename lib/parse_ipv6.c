@@ -49,7 +49,7 @@ static const char *ls32(const char *str, uint16_t *hi, uint16_t *lo)
 }
 
 const char *gcfg_parse_ipv6(gcfg_file_t *f, const char *str,
-			    gcfg_net_addr_t *ret)
+			    gcfg_value_t *ret)
 {
 	uint16_t v[8], w[8];
 	const char *temp;
@@ -119,7 +119,8 @@ const char *gcfg_parse_ipv6(gcfg_file_t *f, const char *str,
 			memcpy(v + (8 - j), w, (size_t)j * sizeof(uint16_t));
 	}
 
-	ret->flags = GCFG_NET_ADDR_IPV6;
+	ret->type = GCFG_VALUE_IPV6;
+	ret->flags = 0;
 
 	if (*str == '/') {
 		str = gcfg_dec_num(f, str + 1, &mask, 128);
@@ -132,7 +133,7 @@ const char *gcfg_parse_ipv6(gcfg_file_t *f, const char *str,
 		ret->cidr_mask = 128;
 	}
 
-	memcpy(ret->raw.ipv6, v, sizeof(v));
+	memcpy(ret->data.ipv6, v, sizeof(v));
 	return str;
 fail_colon:
 	f->report_error(f, "expected ':', found '%c'", *str);

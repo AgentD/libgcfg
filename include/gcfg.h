@@ -38,17 +38,21 @@ typedef enum {
 	GCFG_NUM_NEGATIVE = 0x01,
 
 	GCFG_NUM_PERCENTAGE = 0x02,
-
-	GCFG_NUM_SIZE = 0x04,
-
-	GCFG_NUM_BANDWIDTH = 0x08,
 } GCFG_NUMBER_FLAGS;
 
 typedef enum {
-	GCFG_NET_ADDR_IPV4 = 0x01,
-	GCFG_NET_ADDR_IPV6 = 0x02,
-	GCFG_NET_ADDR_MAC = 0x04,
-	GCFG_NET_ADDR_HAVE_MASK = 0x10,
+	GCFG_VALUE_IPV4 = 1,
+	GCFG_VALUE_IPV6 = 2,
+	GCFG_VALUE_MAC = 3,
+	GCFG_VALUE_BANDWIDTH = 4,
+	GCFG_VALUE_SIZE = 5,
+	GCFG_VALUE_ENUM = 6,
+	GCFG_VALUE_BOOLEAN = 7,
+	GCFG_VALUE_STRING = 8,
+} GCFG_VALUE_TYPE;
+
+typedef enum {
+	GCFG_NET_ADDR_HAVE_MASK = 0x01,
 } GCFG_NET_ADDR_FLAGS;
 
 typedef enum {
@@ -70,11 +74,22 @@ typedef struct {
 			uint32_t vendor;
 			uint32_t device;
 		} mac;
-	} raw;
 
-	uint16_t cidr_mask;
+		uint64_t bandwidth;
+
+		uint64_t size;
+
+		intptr_t enum_value;
+
+		bool boolean;
+
+		char *string;
+	} data;
+
 	uint16_t flags;
-} gcfg_net_addr_t;
+	uint8_t cidr_mask;
+	uint8_t type;
+} gcfg_value_t;
 
 typedef struct {
 	char *scheme;
@@ -125,15 +140,10 @@ typedef struct gcfg_keyword_t {
 	} option;
 
 	union {
-		void *(*cb_none)(gcfg_file_t *file, void *parent);
-		void *(*cb_bool)(gcfg_file_t *file, void *parent, bool boolean);
-		void *(*cb_string)(gcfg_file_t *file, void *parent,
-				   const char *string);
-		void *(*cb_enum)(gcfg_file_t *file, void *parent, int value);
 		void *(*cb_number)(gcfg_file_t *file, void *parent,
 				   const gcfg_number_t *num, int count);
-		void *(*cb_net)(gcfg_file_t *file, void *parent,
-				const gcfg_net_addr_t *address);
+		void *(*cb_value)(gcfg_file_t *file, void *parent,
+				  const gcfg_value_t *value);
 	} handle;
 
 	const struct gcfg_keyword_t *children;
@@ -167,19 +177,19 @@ typedef struct gcfg_keyword_t {
 
 #define GCFG_KEYWORD_NO_ARG(kwdname, childlist, callback, finalize) \
 	GCFG_KEYWORD_BASE(kwdname, GCFG_ARG_NONE, NULL, childlist, \
-			  .cb_none, callback, finalize)
+			  .cb_value, callback, finalize)
 
 #define GCFG_KEYWORD_BOOL(kwdname, childlist, callback, finalize) \
 	GCFG_KEYWORD_BASE(kwdname, GCFG_ARG_BOOLEAN, NULL, childlist, \
-			  .cb_bool, callback, finalize)
+			  .cb_value, callback, finalize)
 
 #define GCFG_KEYWORD_STRING(kwdname, childlist, callback, finalize) \
 	GCFG_KEYWORD_BASE(kwdname, GCFG_ARG_STRING, NULL, childlist, \
-			  .cb_string, callback, finalize)
+			  .cb_value, callback, finalize)
 
 #define GCFG_KEYWORD_ENUM(kwdname, childlist, enumlist, callback, finalize) \
 	GCFG_KEYWORD_BASE(kwdname, GCFG_ARG_ENUM, enumlist, childlist, \
-			  .cb_enum, callback, finalize)
+			  .cb_value, callback, finalize)
 
 #define GCFG_KEYWORD_NUMBER(kwdname, childlist, callback, finalize) \
 	GCFG_KEYWORD_BASE(kwdname, GCFG_ARG_NUMBER, NULL, childlist, \
@@ -199,23 +209,23 @@ typedef struct gcfg_keyword_t {
 
 #define GCFG_KEYWORD_IPV4(kwdname, childlist, callback, finalize) \
 	GCFG_KEYWORD_BASE(kwdname, GCFG_ARG_IPV4, NULL, childlist, \
-			  .cb_net, callback, finalize)
+			  .cb_value, callback, finalize)
 
 #define GCFG_KEYWORD_IPV6(kwdname, childlist, callback, finalize) \
 	GCFG_KEYWORD_BASE(kwdname, GCFG_ARG_IPV6, NULL, childlist, \
-			  .cb_net, callback, finalize)
+			  .cb_value, callback, finalize)
 
 #define GCFG_KEYWORD_MAC(kwdname, childlist, callback, finalize) \
 	GCFG_KEYWORD_BASE(kwdname, GCFG_ARG_MAC_ADDR, NULL, childlist, \
-			  .cb_net, callback, finalize)
+			  .cb_value, callback, finalize)
 
 #define GCFG_KEYWORD_BANDWIDTH(kwdname, childlist, callback, finalize) \
 	GCFG_KEYWORD_BASE(kwdname, GCFG_ARG_BANDWIDTH, NULL, childlist, \
-			  .cb_number, callback, finalize)
+			  .cb_value, callback, finalize)
 
 #define GCFG_KEYWORD_SIZE(kwdname, childlist, callback, finalize) \
 	GCFG_KEYWORD_BASE(kwdname, GCFG_ARG_SIZE, NULL, childlist, \
-			  .cb_number, callback, finalize)
+			  .cb_value, callback, finalize)
 
 #define GCFG_END_KEYWORDS() \
 		{ .name = NULL }, \
@@ -243,29 +253,30 @@ const char *gcfg_dec_num(gcfg_file_t *f, const char *str,
 
 const char *gcfg_ipv4address(gcfg_file_t *f, const char *str, uint32_t *out);
 
-const char *gcfg_parse_ipv4(gcfg_file_t *f, const char *in,
-			    gcfg_net_addr_t *ret);
+const char *gcfg_parse_ipv4(gcfg_file_t *f, const char *in, gcfg_value_t *ret);
 
-const char *gcfg_parse_ipv6(gcfg_file_t *f, const char *in,
-			    gcfg_net_addr_t *ret);
+const char *gcfg_parse_ipv6(gcfg_file_t *f, const char *in, gcfg_value_t *ret);
 
 const char *gcfg_parse_mac_addr(gcfg_file_t *f, const char *in,
-				gcfg_net_addr_t *ret);
+				gcfg_value_t *ret);
 
-const char *gcfg_parse_bandwidth(gcfg_file_t *f, const char *in, uint64_t *ret);
+const char *gcfg_parse_bandwidth(gcfg_file_t *f, const char *in,
+				 gcfg_value_t *ret);
 
 const char *gcfg_parse_number(gcfg_file_t *f, const char *in,
 			      gcfg_number_t *num);
 
-const char *gcfg_parse_boolean(gcfg_file_t *f, const char *in, int *out);
+const char *gcfg_parse_boolean(gcfg_file_t *f, const char *in,
+			       gcfg_value_t *out);
 
 const char *gcfg_parse_vector(gcfg_file_t *f, const char *in,
 			      int count, gcfg_number_t *out);
 
 const char *gcfg_parse_enum(gcfg_file_t *f, const char *in,
-			    const gcfg_enum_t *tokens, int *out);
+			    const gcfg_enum_t *tokens, gcfg_value_t *out);
 
-const char *gcfg_parse_size(gcfg_file_t *f, const char *in, uint64_t *ret);
+const char *gcfg_parse_size(gcfg_file_t *f, const char *in,
+			    gcfg_value_t *ret);
 
 const char *gcfg_parse_string(gcfg_file_t *f, const char *in, char *out);
 

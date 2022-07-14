@@ -137,33 +137,36 @@ static service_dependency_t *find_before_dependency(service_t *svc,
 /************************* config parsing functions **************************/
 
 static void *svc_description_cb(gcfg_file_t *file, void *parent,
-				const char *string)
+				const gcfg_value_t *value)
 {
 	service_t *svc = parent;
 	(void)file;
 
 	free(svc->description);
-	svc->description = strdup(string);
+	svc->description = strdup(value->data.string);
 	return svc;
 }
 
-static void *svc_target_cb(gcfg_file_t *file, void *svc, int value)
+static void *svc_target_cb(gcfg_file_t *file, void *svc,
+			   const gcfg_value_t *value)
 {
 	(void)file;
-	((service_t *)svc)->type = value;
+	((service_t *)svc)->type = (int)value->data.enum_value;
 	return svc;
 }
 
-static void *svc_type_cb(gcfg_file_t *file, void *svc, int value)
+static void *svc_type_cb(gcfg_file_t *file, void *svc,
+			 const gcfg_value_t *value)
 {
 	(void)file;
-	((service_t *)svc)->target = value;
+	((service_t *)svc)->target = (int)value->data.enum_value;
 	return svc;
 }
 
 static void *svc_after_cb(gcfg_file_t *file, void *parent,
-			  const char *string)
+			  const gcfg_value_t *value)
 {
+	const char *string = value->data.string;
 	service_dependency_t *dep;
 	service_t *svc = parent;
 
@@ -190,8 +193,10 @@ fail_before:
 	return NULL;
 }
 
-static void *svc_before_cb(gcfg_file_t *file, void *parent, const char *string)
+static void *svc_before_cb(gcfg_file_t *file, void *parent,
+			   const gcfg_value_t *value)
 {
+	const char *string = value->data.string;
 	service_dependency_t *dep;
 	service_t *svc = parent;
 
@@ -219,8 +224,9 @@ fail_after:
 }
 
 static void *svc_begin_exec_block(gcfg_file_t *file, void *object,
-				  const char *string)
+				  const gcfg_value_t *value)
 {
+	const char *string = value->data.string;
 	service_t *svc = object;
 	exec_block_t *exec, *it;
 
@@ -305,7 +311,7 @@ GCFG_BEGIN_KEYWORDS(kw_service)
 	{
 		.name = "exec",
 		.arg = GCFG_ARG_STRING,
-		.handle = { .cb_string = svc_begin_exec_block },
+		.handle = { .cb_value = svc_begin_exec_block },
 		.handle_listing = svc_exec_line,
 	},
 GCFG_END_KEYWORDS();

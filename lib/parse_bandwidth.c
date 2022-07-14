@@ -14,12 +14,13 @@
 			scale = (dec); \
 		}
 
-const char *gcfg_parse_bandwidth(gcfg_file_t *f, const char *in, uint64_t *ret)
+const char *gcfg_parse_bandwidth(gcfg_file_t *f, const char *in,
+				 gcfg_value_t *ret)
 {
 	const char *start = in;
-	uint64_t scale;
+	uint64_t value, scale;
 
-	in = gcfg_dec_num(f, in, ret, 0xFFFFFFFFFFFFFFFF);
+	in = gcfg_dec_num(f, in, &value, 0xFFFFFFFFFFFFFFFF);
 	if (in == NULL)
 		return NULL;
 
@@ -59,11 +60,14 @@ const char *gcfg_parse_bandwidth(gcfg_file_t *f, const char *in, uint64_t *ret)
 		++in;
 	}
 
-	if ((*ret) > (0xFFFFFFFFFFFFFFFFUL / scale)) {
+	if (value > (0xFFFFFFFFFFFFFFFFUL / scale)) {
 		f->report_error(f, "numeric overflow in %.6s...", start);
 		return NULL;
 	}
 
-	(*ret) *= scale;
+	ret->type = GCFG_VALUE_BANDWIDTH;
+	ret->cidr_mask = 0;
+	ret->flags = 0;
+	ret->data.bandwidth = value * scale;
 	return in;
 }

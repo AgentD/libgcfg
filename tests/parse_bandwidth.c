@@ -45,8 +45,8 @@ static const struct {
 
 static void test_case(gcfg_file_t *df, size_t i)
 {
+	gcfg_value_t out;
 	const char *ret;
-	uint64_t out;
 
 	ret = gcfg_parse_bandwidth(df, testvec[i].in, &out);
 
@@ -62,12 +62,22 @@ static void test_case(gcfg_file_t *df, size_t i)
 	if (ret == NULL)
 		return;
 
-	if (out != testvec[i].out) {
+	if (out.type != GCFG_VALUE_BANDWIDTH) {
+		fprintf(stderr, "Wrong type for %zu: %u\n", i, out.type);
+		exit(EXIT_FAILURE);
+	}
+
+	if (out.flags != 0) {
+		fprintf(stderr, "Flags set fofor %zu: %X\n", i, out.flags);
+		exit(EXIT_FAILURE);
+	}
+
+	if (out.data.bandwidth != testvec[i].out) {
 		fprintf(stderr, "Mismatch for %zu\n", i);
 		fprintf(stderr, "Expected: %lu\n",
 			(unsigned long)testvec[i].out);
 		fprintf(stderr, "Received: %lu\n",
-			(unsigned long)out);
+			(unsigned long)out.data.bandwidth);
 		exit(EXIT_FAILURE);
 	}
 }
