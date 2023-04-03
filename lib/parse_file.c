@@ -60,16 +60,16 @@ static const char *apply_arg(gcfg_file_t *file, const gcfg_keyword_t *kwd,
 	char *strval;
 
 	switch (kwd->arg) {
-	case GCFG_ARG_NONE:
+	case GCFG_VALUE_NONE:
 		*child_out = kwd->handle.cb_value(file, parent, NULL);
 		break;
-	case GCFG_ARG_BOOLEAN:
+	case GCFG_VALUE_BOOLEAN:
 		ptr = gcfg_parse_boolean(file, ptr, &val);
 		if (ptr == NULL)
 			return NULL;
 		*child_out = kwd->handle.cb_value(file, parent, &val);
 		break;
-	case GCFG_ARG_STRING:
+	case GCFG_VALUE_STRING:
 		strval = file->buffer;
 		ptr = gcfg_parse_string(file, ptr, strval);
 		if (ptr == NULL)
@@ -82,38 +82,38 @@ static const char *apply_arg(gcfg_file_t *file, const gcfg_keyword_t *kwd,
 
 		*child_out = kwd->handle.cb_value(file, parent, &val);
 		break;
-	case GCFG_ARG_ENUM:
+	case GCFG_VALUE_ENUM:
 		ptr = gcfg_parse_enum(file, ptr, kwd->option.enumtokens, &val);
 		if (ptr == NULL)
 			return NULL;
 		*child_out = kwd->handle.cb_value(file, parent, &val);
 		break;
-	case GCFG_ARG_NUMBER:
+	case GCFG_VALUE_NUMBER:
 		ptr = gcfg_parse_number(file, ptr, &val, 0);
 		if (ptr == NULL)
 			return NULL;
 		*child_out = kwd->handle.cb_value(file, parent, &val);
 		break;
-	case GCFG_ARG_SIZE:
+	case GCFG_VALUE_SIZE:
 		ptr = gcfg_parse_size(file, ptr, &val);
 		if (ptr == NULL)
 			return NULL;
 		*child_out = kwd->handle.cb_value(file, parent, &val);
 		break;
 #ifndef GCFG_DISABLE_VECTOR
-	case GCFG_ARG_VEC2:
+	case GCFG_VALUE_VEC2:
 		ptr = gcfg_parse_vector(file, ptr, &val, 2);
 		if (ptr == NULL)
 			return NULL;
 		*child_out = kwd->handle.cb_value(file, parent, &val);
 		break;
-	case GCFG_ARG_VEC3:
+	case GCFG_VALUE_VEC3:
 		ptr = gcfg_parse_vector(file, ptr, &val, 3);
 		if (ptr == NULL)
 			return NULL;
 		*child_out = kwd->handle.cb_value(file, parent, &val);
 		break;
-	case GCFG_ARG_VEC4:
+	case GCFG_VALUE_VEC4:
 		ptr = gcfg_parse_vector(file, ptr, &val, 4);
 		if (ptr == NULL)
 			return NULL;
@@ -121,25 +121,25 @@ static const char *apply_arg(gcfg_file_t *file, const gcfg_keyword_t *kwd,
 		break;
 #endif
 #ifndef GCFG_DISABLE_NETWORK
-	case GCFG_ARG_IPV4:
+	case GCFG_VALUE_IPV4:
 		ptr = gcfg_parse_ipv4(file, ptr, &val);
 		if (ptr == NULL)
 			return NULL;
 		*child_out = kwd->handle.cb_value(file, parent, &val);
 		break;
-	case GCFG_ARG_IPV6:
+	case GCFG_VALUE_IPV6:
 		ptr = gcfg_parse_ipv6(file, ptr, &val);
 		if (ptr == NULL)
 			return NULL;
 		*child_out = kwd->handle.cb_value(file, parent, &val);
 		break;
-	case GCFG_ARG_MAC_ADDR:
+	case GCFG_VALUE_MAC:
 		ptr = gcfg_parse_mac_addr(file, ptr, &val);
 		if (ptr == NULL)
 			return NULL;
 		*child_out = kwd->handle.cb_value(file, parent, &val);
 		break;
-	case GCFG_ARG_BANDWIDTH:
+	case GCFG_VALUE_BANDWIDTH:
 		ptr = gcfg_parse_bandwidth(file, ptr, &val);
 		if (ptr == NULL)
 			return NULL;
@@ -237,10 +237,10 @@ static int parse(gcfg_file_t *file, const gcfg_keyword_t *keywords,
 			have_args = !is_line_end(*ptr) && *ptr != '{' &&
 				    *ptr != '}';
 
-			if (!have_args && kwd->arg != GCFG_ARG_NONE)
+			if (!have_args && kwd->arg != GCFG_VALUE_NONE)
 				goto fail_missing_arg;
 
-			if (have_args && kwd->arg == GCFG_ARG_NONE)
+			if (have_args && kwd->arg == GCFG_VALUE_NONE)
 				goto fail_have_arg;
 
 			ptr = apply_arg(file, kwd, ptr, parent, &child);
@@ -291,7 +291,7 @@ fail_utf8:
 	file->report_error(file, "encoding error (expected UTF-8)");
 	return -1;
 fail_kwd_extra:
-	if (kwd->arg == GCFG_ARG_NONE) {
+	if (kwd->arg == GCFG_VALUE_NONE) {
 		file->report_error(file, "'%s' must be folled "
 				   "by a line break", kwd->name);
 	} else {

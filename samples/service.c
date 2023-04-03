@@ -310,7 +310,7 @@ GCFG_BEGIN_KEYWORDS(kw_service)
 	GCFG_KEYWORD_STRING("before", NULL, svc_before_cb, NULL),
 	{
 		.name = "exec",
-		.arg = GCFG_ARG_STRING,
+		.arg = GCFG_VALUE_STRING,
 		.handle = { .cb_value = svc_begin_exec_block },
 		.handle_listing = svc_exec_line,
 	},
