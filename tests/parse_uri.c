@@ -111,7 +111,7 @@ static void test_case(gcfg_file_t *df, size_t i)
 {
 	char buffer[128];
 	const char *ret;
-	gcfg_uri_t uri;
+	gcfg_value_t uri;
 
 	ret = gcfg_parse_uri(df, testvec[i].str, buffer, &uri);
 
@@ -124,37 +124,43 @@ static void test_case(gcfg_file_t *df, size_t i)
 		return;
 	}
 
+	if (uri.type != GCFG_VALUE_URI) {
+		fprintf(stderr, "URI `%s` has type %d instead of "
+			"GCFG_VALUE_URI!\n", testvec[i].str, uri.type);
+		exit(EXIT_FAILURE);
+	}
+
 	if (testvec[i].result != 0) {
 		fprintf(stderr, "URI `%s` was accepted!\n", testvec[i].str);
 		exit(EXIT_FAILURE);
 	}
 
-	if (uri.scheme == NULL || strcmp(testvec[i].scheme, uri.scheme) != 0)
+	if (uri.data.uri.scheme == NULL || strcmp(testvec[i].scheme, uri.data.uri.scheme) != 0)
 		goto fail_scheme;
 
-	if (match_str(testvec[i].userinfo, uri.userinfo))
+	if (match_str(testvec[i].userinfo, uri.data.uri.userinfo))
 		goto fail_uinfo;
 
-	if (match_str(testvec[i].host, uri.host))
+	if (match_str(testvec[i].host, uri.data.uri.host))
 		goto fail_host;
 
 	if (testvec[i].flags & GCFG_URI_HAS_PORT) {
 		if (!(uri.flags & GCFG_URI_HAS_PORT))
 			goto fail_port;
-		if (testvec[i].port != uri.port)
+		if (testvec[i].port != uri.data.uri.port)
 			goto fail_port;
 	} else {
 		if (uri.flags & GCFG_URI_HAS_PORT)
 			goto fail_no_port;
 	}
 
-	if (match_str(testvec[i].path, uri.path))
+	if (match_str(testvec[i].path, uri.data.uri.path))
 		goto fail_path;
 
-	if (match_str(testvec[i].query, uri.query))
+	if (match_str(testvec[i].query, uri.data.uri.query))
 		goto fail_query;
 
-	if (match_str(testvec[i].fragment, uri.fragment))
+	if (match_str(testvec[i].fragment, uri.data.uri.fragment))
 		goto fail_frag;
 
 	if (uri.flags != testvec[i].flags) {
@@ -166,15 +172,15 @@ static void test_case(gcfg_file_t *df, size_t i)
 	return;
 fail_scheme:
 	fprintf(stderr, "URI `%s` scheme was extracted as `%s`!\n",
-		testvec[i].str, uri.scheme);
+		testvec[i].str, uri.data.uri.scheme);
 	exit(EXIT_FAILURE);
 fail_uinfo:
 	fprintf(stderr, "URI `%s` userinfo was extracted as `%s`!\n",
-		testvec[i].str, uri.userinfo);
+		testvec[i].str, uri.data.uri.userinfo);
 	exit(EXIT_FAILURE);
 fail_host:
 	fprintf(stderr, "URI `%s` host was extracted as `%s`!\n",
-		testvec[i].str, uri.host);
+		testvec[i].str, uri.data.uri.host);
 	exit(EXIT_FAILURE);
 fail_no_port:
 	fprintf(stderr, "URI `%s` port number was not recognized!\n",
@@ -182,19 +188,19 @@ fail_no_port:
 	exit(EXIT_FAILURE);
 fail_port:
 	fprintf(stderr, "URI `%s` port number was extracted as `%u`!\n",
-		testvec[i].str, (unsigned int)uri.port);
+		testvec[i].str, (unsigned int)uri.data.uri.port);
 	exit(EXIT_FAILURE);
 fail_path:
 	fprintf(stderr, "URI `%s` path was extracted as `%s`!\n",
-		testvec[i].str, uri.path);
+		testvec[i].str, uri.data.uri.path);
 	exit(EXIT_FAILURE);
 fail_query:
 	fprintf(stderr, "URI `%s` query was extracted as `%s`!\n",
-		testvec[i].str, uri.query);
+		testvec[i].str, uri.data.uri.query);
 	exit(EXIT_FAILURE);
 fail_frag:
 	fprintf(stderr, "URI `%s` fragment was extracted as `%s`!\n",
-		testvec[i].str, uri.fragment);
+		testvec[i].str, uri.data.uri.fragment);
 	exit(EXIT_FAILURE);
 }
 

@@ -53,9 +53,9 @@ static bool have_char_in_uri(const char *ptr, int c)
 /*****************************************************************************/
 
 static const char *scheme(gcfg_file_t *f, const char *in,
-			  char *out, gcfg_uri_t *uri)
+			  char *out, gcfg_value_t *uri)
 {
-	uri->scheme = out;
+	uri->data.uri.scheme = out;
 
 	for (;;) {
 		int c = *(in++);
@@ -70,14 +70,14 @@ static const char *scheme(gcfg_file_t *f, const char *in,
 
 		if ((c >= '0' && c <= '9') || c == '+' ||
 		    c == '-' || c == '.') {
-			if (uri->scheme == out)
+			if (uri->data.uri.scheme == out)
 				goto fail;
 			*(out++) = (char)c;
 			continue;
 		}
 
 		if (c == ':') {
-			if (uri->scheme == out)
+			if (uri->data.uri.scheme == out)
 				goto fail;
 			*(out++) = '\0';
 			break;
@@ -94,9 +94,9 @@ fail:
 }
 
 static const char *userinfo(gcfg_file_t *f, const char *in,
-			    char *out, gcfg_uri_t *uri)
+			    char *out, gcfg_value_t *uri)
 {
-	uri->userinfo = out;
+	uri->data.uri.userinfo = out;
 
 	for (;;) {
 		int c = *(in++);
@@ -123,12 +123,12 @@ fail:
 }
 
 static const char *hostname(gcfg_file_t *f, const char *in,
-			    char *out, gcfg_uri_t *uri)
+			    char *out, gcfg_value_t *uri)
 {
 	uint64_t port = 0;
 	const char *end;
 
-	uri->host = out;
+	uri->data.uri.host = out;
 
 	if (*in == '[') {
 		gcfg_value_t temp;
@@ -152,7 +152,7 @@ static const char *hostname(gcfg_file_t *f, const char *in,
 			}
 		}
 
-		if (gcfg_parse_ipv6(NULL, uri->host, &temp) == NULL)
+		if (gcfg_parse_ipv6(NULL, uri->data.uri.host, &temp) == NULL)
 			goto fail_addr_v6;
 
 		uri->flags |= GCFG_URI_HOST_IPV6;
@@ -167,7 +167,7 @@ static const char *hostname(gcfg_file_t *f, const char *in,
 				    is_sub_delim(*in) || *in == '%') {
 					*(out++) = *(in++);
 				} else {
-					if (uri->host == out)
+					if (uri->data.uri.host == out)
 						goto fail_host_empty;
 					break;
 				}
@@ -193,7 +193,7 @@ static const char *hostname(gcfg_file_t *f, const char *in,
 		}
 
 		uri->flags |= GCFG_URI_HAS_PORT;
-		uri->port = (uint16_t)(port & 0x0FFFF);
+		uri->data.uri.port = (uint16_t)(port & 0x0FFFF);
 		in = end;
 	}
 
@@ -233,9 +233,11 @@ static const char *path_rootless(const char *in, char *out)
 /*****************************************************************************/
 
 const char *gcfg_parse_uri(gcfg_file_t *f, const char *in,
-			   char *out, gcfg_uri_t *uri)
+			   char *out, gcfg_value_t *uri)
 {
 	memset(uri, 0, sizeof(*uri));
+
+	uri->type = GCFG_VALUE_URI;
 
 	/* <scheme> ':' */
 	in = scheme(f, in, out, uri);
@@ -261,7 +263,7 @@ const char *gcfg_parse_uri(gcfg_file_t *f, const char *in,
 		out += (strlen(out) + 1);
 
 		/* <path_abempty> */
-		uri->path = out;
+		uri->data.uri.path = out;
 
 		while (*in == '/') {
 			while (*in == '/')
@@ -275,21 +277,21 @@ const char *gcfg_parse_uri(gcfg_file_t *f, const char *in,
 				*(out++) = *(in++);
 		}
 
-		if (out == uri->path)
+		if (out == uri->data.uri.path)
 			*(out++) = '/';
 		*(out++) = '\0';
 	} else if (*in == '/') {
 		if (!is_pchar(in[1]))
 			goto fail_absolute;
 
-		uri->path = out;
+		uri->data.uri.path = out;
 		*(out++) = '/';
 		++in;
 
 		in = path_rootless(in, out);
 		out += (strlen(out) + 1);
 	} else if (is_pchar(*in)) {
-		uri->path = out;
+		uri->data.uri.path = out;
 		in = path_rootless(in, out);
 	}
 
@@ -297,7 +299,7 @@ const char *gcfg_parse_uri(gcfg_file_t *f, const char *in,
 	if (*in == '?') {
 		++in;
 
-		uri->query = out;
+		uri->data.uri.query = out;
 		while (is_pchar(*in) || *in == '/' || *in == '?')
 			*(out++) = *(in++);
 
@@ -308,7 +310,7 @@ const char *gcfg_parse_uri(gcfg_file_t *f, const char *in,
 	if (*in == '#') {
 		++in;
 
-		uri->fragment = out;
+		uri->data.uri.fragment = out;
 		while (is_pchar(*in) || *in == '/' || *in == '?')
 			*(out++) = *(in++);
 

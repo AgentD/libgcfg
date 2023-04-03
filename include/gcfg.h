@@ -29,6 +29,7 @@ typedef enum {
 	GCFG_VALUE_VEC2 = 11,
 	GCFG_VALUE_VEC3 = 12,
 	GCFG_VALUE_VEC4 = 13,
+	GCFG_VALUE_URI = 14,
 } GCFG_VALUE_TYPE;
 
 typedef enum {
@@ -69,23 +70,22 @@ typedef struct {
 			int64_t value;
 			int32_t exponent;
 		} number[4];
+
+		struct {
+			char *scheme;
+			char *userinfo;
+			char *host;
+			char *path;
+			char *query;
+			char *fragment;
+			uint16_t port;
+		} uri;
 	} data;
 
 	uint16_t flags;
 	uint8_t cidr_mask;
 	uint8_t type;
 } gcfg_value_t;
-
-typedef struct {
-	char *scheme;
-	char *userinfo;
-	char *host;
-	char *path;
-	char *query;
-	char *fragment;
-	uint16_t port;
-	uint16_t flags;
-} gcfg_uri_t;
 
 typedef struct {
 	const char *name;
@@ -258,7 +258,7 @@ const char *gcfg_parse_size(gcfg_file_t *f, const char *in,
 const char *gcfg_parse_string(gcfg_file_t *f, const char *in, char *out);
 
 const char *gcfg_parse_uri(gcfg_file_t *f, const char *in,
-			   char *buffer, gcfg_uri_t *out);
+			   char *buffer, gcfg_value_t *out);
 
 bool gcfg_is_valid_cp(uint32_t cp);
 
