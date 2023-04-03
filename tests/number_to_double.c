@@ -10,16 +10,15 @@
 #include <math.h>
 
 static const struct {
-	gcfg_number_t input;
-	int pad0[3];
+	gcfg_value_t input;
 	double result;
 } test_vec[] = {
-	{ .input = { 1337, 0, 0 }, .result = 1337.0 },
-	{ .input = { -1337, 0, 0 }, .result = -1337.0 },
-	{ .input = { 1337, -2, 0 }, .result = 13.37 },
-	{ .input = { -1337, -2, 0 }, .result = -13.37 },
-	{ .input = { 42, 2, 0 }, .result = 4200.0 },
-	{ .input = { -42, 2, 0 }, .result = -4200.0 },
+	{ { .data = { .number = {{1337}, {0}} } }, 1337.0 },
+	{ { .data = { .number = {{-1337}, {0}} } }, -1337.0 },
+	{ { .data = { .number = {{1337}, {-2}} } }, 13.37 },
+	{ { .data = { .number = {{-1337}, {-2}} } }, -13.37 },
+	{ { .data = { .number = {{42}, {2}} } }, 4200.0 },
+	{ { .data = { .number = {{-42}, {2}} } }, -4200.0 },
 };
 
 int main(void)
@@ -30,15 +29,15 @@ int main(void)
 	for (i = 0; i < sizeof(test_vec) / sizeof(test_vec[0]); ++i) {
 		expected = test_vec[i].result;
 
-		ret = gcfg_number_to_double(&test_vec[i].input);
+		ret = gcfg_number_to_double(&test_vec[i].input, 0);
 
 		diff = fabs(expected - ret);
 
 		if (diff > 1e-10) {
 			fprintf(stderr, "'%lde%d' was converted "
 				"to %f instead of %f (diff %f)!\n",
-				(long)test_vec[i].input.value,
-				test_vec[i].input.exponent,
+				(long)test_vec[i].input.data.number.value[0],
+				test_vec[i].input.data.number.exponent[0],
 				ret, expected, diff);
 			return EXIT_FAILURE;
 		}

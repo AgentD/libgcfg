@@ -7,9 +7,9 @@
 #include "gcfg.h"
 
 const char *gcfg_parse_vector(gcfg_file_t *f, const char *in,
-			      int count, gcfg_number_t *out)
+			      gcfg_value_t *out, size_t count)
 {
-	int i;
+	size_t i;
 
 	if (*in != '(') {
 		f->report_error(f, "expected '(', found '%c'", *in);
@@ -31,7 +31,7 @@ const char *gcfg_parse_vector(gcfg_file_t *f, const char *in,
 		while (*in == ' ' || *in == '\t')
 			++in;
 
-		in = gcfg_parse_number(f, in, out + i);
+		in = gcfg_parse_number(f, in, out, i);
 		if (in == NULL)
 			return NULL;
 
@@ -47,6 +47,13 @@ const char *gcfg_parse_vector(gcfg_file_t *f, const char *in,
 	++in;
 	while (*in == ' ' || *in == '\t')
 		++in;
+
+	switch (count) {
+	case 2:  out->type = GCFG_VALUE_VEC2; break;
+	case 3:  out->type = GCFG_VALUE_VEC3; break;
+	case 4:  out->type = GCFG_VALUE_VEC4; break;
+	default: out->type = GCFG_VALUE_NUMBER; break;
+	}
 
 	return in;
 }

@@ -7,26 +7,42 @@
 #include "gcfg.h"
 #include "test.h"
 
+#define VEC1(a, b) \
+	{ .data = { .number = { {a}, {b} } }, .type = GCFG_VALUE_NUMBER }
+
+#define VEC2(a, b, c, d) \
+	{ .data = { .number = { {a, c}, {b, d} } }, .type = GCFG_VALUE_VEC2 }
+
+#define VEC3(a, b, c, d, e, f) \
+	{ .data = { .number = { {a, c, e}, {b, d, f} } }, \
+	  .type = GCFG_VALUE_VEC3 }
+
+#define VEC4(a, b, c, d, e, f, g, h) \
+	{ .data = { .number = { {a, c, e, g}, {b, d, f, h} } }, \
+	  .type = GCFG_VALUE_VEC4 }
+
 static const struct {
 	const char *in;
 	size_t count;
 	int ret;
-	gcfg_number_t out[4];
+	gcfg_value_t out;
 } testvec[] = {
-	{ "(+1,-2,+3,-4)", 4, 0, {{1,0,0},{-2,0,0},{3,0,0},{-4,0,0}} },
-	{ "(+1,-2,+3)", 3, 0, {{1,0,0},{-2,0,0},{3,0,0}} },
-	{ "(+1,-2)", 2, 0, {{1,0,0},{-2,0,0}} },
-	{ "(-2)", 1, 0, {{-2,0,0}} },
-	{ "(+1,-2,+3,-4)", 3, -1, {{0}} },
-	{ "(+1,-2,+3)", 4, -1, {{0}} },
+	{ "(+1,-2,+3,-4)", 4, 0, VEC4(1, 0, -2, 0, 3, 0, -4, 0) },
+	{ "(+1,-2,+3)", 3, 0, VEC3(1, 0, -2, 0, 3, 0) },
+	{ "(+1,-2)", 2, 0, VEC2(1, 0, -2, 0) },
+	{ "(-2)", 1, 0, VEC1(-2, 0) },
+	{ "(+1,-2,+3,-4)", 3, -1, VEC1(0,0) },
+	{ "(+1,-2,+3)", 4, -1, VEC1(0,0) },
 };
 
 static void test_case(gcfg_file_t *df, size_t i)
 {
-	gcfg_number_t out[4];
+	gcfg_value_t out;
 	const char *ret;
 
-	ret = gcfg_parse_vector(df, testvec[i].in, (int)testvec[i].count, out);
+	memset(&out, 0, sizeof(out));
+
+	ret = gcfg_parse_vector(df, testvec[i].in, &out, testvec[i].count);
 
 	if ((ret == NULL && testvec[i].ret == 0) ||
 	    (ret != NULL && testvec[i].ret != 0)) {
@@ -40,7 +56,7 @@ static void test_case(gcfg_file_t *df, size_t i)
 	if (ret == NULL)
 		return;
 
-	if (memcmp(out, testvec[i].out, testvec[i].count * sizeof(out[0]))) {
+	if (memcmp(&out, &(testvec[i].out), sizeof(out))) {
 		fprintf(stderr, "Mismatch for %zu\n", i);
 		exit(EXIT_FAILURE);
 	}

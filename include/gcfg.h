@@ -35,10 +35,6 @@ typedef enum {
 } GCFG_ARG_TYPE;
 
 typedef enum {
-	GCFG_NUM_PERCENTAGE = 0x02,
-} GCFG_NUMBER_FLAGS;
-
-typedef enum {
 	GCFG_VALUE_IPV4 = 1,
 	GCFG_VALUE_IPV6 = 2,
 	GCFG_VALUE_MAC = 3,
@@ -47,6 +43,11 @@ typedef enum {
 	GCFG_VALUE_ENUM = 6,
 	GCFG_VALUE_BOOLEAN = 7,
 	GCFG_VALUE_STRING = 8,
+	GCFG_VALUE_NUMBER = 9,
+	GCFG_VALUE_PERCENTAGE = 10,
+	GCFG_VALUE_VEC2 = 11,
+	GCFG_VALUE_VEC3 = 12,
+	GCFG_VALUE_VEC4 = 13,
 } GCFG_VALUE_TYPE;
 
 typedef enum {
@@ -82,6 +83,11 @@ typedef struct {
 		bool boolean;
 
 		char *string;
+
+		struct {
+			int64_t value[4];
+			int32_t exponent[4];
+		} number;
 	} data;
 
 	uint16_t flags;
@@ -99,12 +105,6 @@ typedef struct {
 	uint16_t port;
 	uint16_t flags;
 } gcfg_uri_t;
-
-typedef struct {
-	int64_t value;
-	int32_t exponent;
-	uint32_t flags;
-} gcfg_number_t;
 
 typedef struct {
 	const char *name;
@@ -138,8 +138,6 @@ typedef struct gcfg_keyword_t {
 	} option;
 
 	union {
-		void *(*cb_number)(gcfg_file_t *file, void *parent,
-				   const gcfg_number_t *num, int count);
 		void *(*cb_value)(gcfg_file_t *file, void *parent,
 				  const gcfg_value_t *value);
 	} handle;
@@ -191,19 +189,19 @@ typedef struct gcfg_keyword_t {
 
 #define GCFG_KEYWORD_NUMBER(kwdname, childlist, callback, finalize) \
 	GCFG_KEYWORD_BASE(kwdname, GCFG_ARG_NUMBER, NULL, childlist, \
-			  .cb_number, callback, finalize)
+			  .cb_value, callback, finalize)
 
 #define GCFG_KEYWORD_VEC2(kwdname, childlist, callback, finalize) \
 	GCFG_KEYWORD_BASE(kwdname, GCFG_ARG_VEC2, NULL, childlist, \
-			  .cb_number, callback, finalize)
+			  .cb_value, callback, finalize)
 
 #define GCFG_KEYWORD_VEC3(kwdname, childlist, callback, finalize) \
 	GCFG_KEYWORD_BASE(kwdname, GCFG_ARG_VEC3, NULL, childlist, \
-			  .cb_number, callback, finalize)
+			  .cb_value, callback, finalize)
 
 #define GCFG_KEYWORD_VEC4(kwdname, childlist, callback, finalize) \
 	GCFG_KEYWORD_BASE(kwdname, GCFG_ARG_VEC4, NULL, childlist, \
-			  .cb_number, callback, finalize)
+			  .cb_value, callback, finalize)
 
 #define GCFG_KEYWORD_IPV4(kwdname, childlist, callback, finalize) \
 	GCFG_KEYWORD_BASE(kwdname, GCFG_ARG_IPV4, NULL, childlist, \
@@ -233,7 +231,7 @@ typedef struct gcfg_keyword_t {
 extern "C" {
 #endif
 
-double gcfg_number_to_double(const gcfg_number_t *num);
+double gcfg_number_to_double(const gcfg_value_t *num, size_t index);
 
 int gcfg_parse_file(gcfg_file_t *file, const gcfg_keyword_t *keywords,
 		    void *usr);
@@ -262,13 +260,13 @@ const char *gcfg_parse_bandwidth(gcfg_file_t *f, const char *in,
 				 gcfg_value_t *ret);
 
 const char *gcfg_parse_number(gcfg_file_t *f, const char *in,
-			      gcfg_number_t *num);
+			      gcfg_value_t *out, size_t index);
 
 const char *gcfg_parse_boolean(gcfg_file_t *f, const char *in,
 			       gcfg_value_t *out);
 
 const char *gcfg_parse_vector(gcfg_file_t *f, const char *in,
-			      int count, gcfg_number_t *out);
+			      gcfg_value_t *out, size_t count);
 
 const char *gcfg_parse_enum(gcfg_file_t *f, const char *in,
 			    const gcfg_enum_t *tokens, gcfg_value_t *out);

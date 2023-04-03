@@ -56,7 +56,6 @@ static const char *find_keyword(gcfg_file_t *file,
 static const char *apply_arg(gcfg_file_t *file, const gcfg_keyword_t *kwd,
 			     const char *ptr, void *parent, void **child_out)
 {
-	gcfg_number_t num[4];
 	gcfg_value_t val;
 	char *strval;
 
@@ -90,10 +89,10 @@ static const char *apply_arg(gcfg_file_t *file, const gcfg_keyword_t *kwd,
 		*child_out = kwd->handle.cb_value(file, parent, &val);
 		break;
 	case GCFG_ARG_NUMBER:
-		ptr = gcfg_parse_number(file, ptr, num);
+		ptr = gcfg_parse_number(file, ptr, &val, 0);
 		if (ptr == NULL)
 			return NULL;
-		*child_out = kwd->handle.cb_number(file, parent, num, 1);
+		*child_out = kwd->handle.cb_value(file, parent, &val);
 		break;
 	case GCFG_ARG_SIZE:
 		ptr = gcfg_parse_size(file, ptr, &val);
@@ -103,22 +102,22 @@ static const char *apply_arg(gcfg_file_t *file, const gcfg_keyword_t *kwd,
 		break;
 #ifndef GCFG_DISABLE_VECTOR
 	case GCFG_ARG_VEC2:
-		ptr = gcfg_parse_vector(file, ptr, 2, num);
+		ptr = gcfg_parse_vector(file, ptr, &val, 2);
 		if (ptr == NULL)
 			return NULL;
-		*child_out = kwd->handle.cb_number(file, parent, num, 2);
+		*child_out = kwd->handle.cb_value(file, parent, &val);
 		break;
 	case GCFG_ARG_VEC3:
-		ptr = gcfg_parse_vector(file, ptr, 3, num);
+		ptr = gcfg_parse_vector(file, ptr, &val, 3);
 		if (ptr == NULL)
 			return NULL;
-		*child_out = kwd->handle.cb_number(file, parent, num, 3);
+		*child_out = kwd->handle.cb_value(file, parent, &val);
 		break;
 	case GCFG_ARG_VEC4:
-		ptr = gcfg_parse_vector(file, ptr, 4, num);
+		ptr = gcfg_parse_vector(file, ptr, &val, 4);
 		if (ptr == NULL)
 			return NULL;
-		*child_out = kwd->handle.cb_number(file, parent, num, 4);
+		*child_out = kwd->handle.cb_value(file, parent, &val);
 		break;
 #endif
 #ifndef GCFG_DISABLE_NETWORK

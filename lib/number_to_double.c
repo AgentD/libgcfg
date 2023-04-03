@@ -8,7 +8,10 @@
 
 #include <math.h>
 
-double gcfg_number_to_double(const gcfg_number_t *num)
+double gcfg_number_to_double(const gcfg_value_t *num, size_t index)
 {
-	return (double)num->value * pow(10.0, num->exponent);
+	double value = (double)num->data.number.value[index];
+	int32_t exponent = num->data.number.exponent[index];
+
+	return value * pow(10.0, exponent);
 }

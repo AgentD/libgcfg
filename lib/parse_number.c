@@ -8,16 +8,18 @@
 #include "gcfg.h"
 
 const char *gcfg_parse_number(gcfg_file_t *f, const char *in,
-			      gcfg_number_t *num)
+			      gcfg_value_t *out, size_t index)
 {
-	bool negative = false;
+	bool negative = false, percentage = false;
 	int32_t exponent;
 	uint64_t temp;
+	int64_t value;
 	int i;
 
-	num->flags = 0;
-	num->exponent = 0;
+	if (index >= 4)
+		goto fail_index;
 
+	/* parse value */
 	if (*in == '-')
 		negative = true;
 
@@ -28,30 +30,29 @@ const char *gcfg_parse_number(gcfg_file_t *f, const char *in,
 	if (in == NULL)
 		return NULL;
 
-	num->value = (int64_t)temp;
+	value = (int64_t)temp;
+	exponent = 0;
 
 	if (*in == '.') {
 		++in;
 		for (i = 0; in[i] >= '0' && in[i] <= '9'; ++i) {
-			if (num->value >= (0x7FFFFFFFFFFFFFFFL / 10))
+			if (value >= (0x7FFFFFFFFFFFFFFFL / 10))
 				goto fail_fract;
-			if (num->exponent == INT32_MIN)
+			if (exponent == INT32_MIN)
 				goto fail_fract;
 
-			num->value *= 10;
-			num->exponent--;
+			value *= 10;
+			exponent--;
 		}
 
 		in = gcfg_dec_num(f, in, &temp, 0x7FFFFFFFFFFFFFFF);
 		if (in == NULL)
 			return NULL;
 
-		num->value += (int64_t)temp;
+		value += (int64_t)temp;
 	}
 
-	if (negative)
-		num->value = -(num->value);
-
+	/* parse exponent */
 	switch (*in) {
 	case 'e':
 	case 'E':
@@ -62,29 +63,39 @@ const char *gcfg_parse_number(gcfg_file_t *f, const char *in,
 		if (in == NULL)
 			return NULL;
 
-		exponent = (int32_t)temp;
 		if (i) {
-			if (num->exponent < (INT32_MIN + exponent))
+			if (exponent < (INT32_MIN + (int32_t)temp))
 				goto fail_exp;
-			num->exponent -= exponent;
+			exponent -= (int32_t)temp;
 		} else {
-			if (num->exponent > (INT32_MAX - exponent))
+			if (exponent > (INT32_MAX - (int32_t)temp))
 				goto fail_exp;
-			num->exponent += exponent;
+			exponent += (int32_t)temp;
 		}
 		break;
 	case '%':
-		if (num->exponent < (INT32_MIN + 2))
+		if (exponent < (INT32_MIN + 2))
 			goto fail_exp;
 		++in;
-		num->exponent -= 2;
-		num->flags |= GCFG_NUM_PERCENTAGE;
+		exponent -= 2;
+		percentage = true;
 		break;
 	default:
 		break;
 	}
 
+	/* store result */
+	out->flags = 0;
+	out->cidr_mask = 0;
+	out->type = percentage ? GCFG_VALUE_PERCENTAGE : GCFG_VALUE_NUMBER;
+	out->data.number.value[index] = negative ? -value : value;
+	out->data.number.exponent[index] = exponent;
 	return in;
+fail_index:
+	if (f != NULL) {
+		f->report_error(f, "[BUG] vector index out of bounds");
+	}
+	return NULL;
 fail_exp:
 	if (f != NULL) {
 		f->report_error(f, "numeric oveflow/underflow in exponent");
