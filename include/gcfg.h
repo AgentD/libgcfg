@@ -118,10 +118,8 @@ typedef struct gcfg_keyword_t {
 		const gcfg_enum_t *enumtokens;
 	} option;
 
-	union {
-		void *(*cb_value)(gcfg_file_t *file, void *parent,
-				  const gcfg_value_t *value);
-	} handle;
+	void *(*set_property)(gcfg_file_t *file, void *parent,
+			      const gcfg_value_t *value);
 
 	const struct gcfg_keyword_t *children;
 
@@ -139,13 +137,13 @@ typedef struct gcfg_keyword_t {
 #define GCFG_END_ENUM() { 0, 0 } }
 
 
-#define GCFG_KEYWORD_BASE(nam, karg, elist, clist, cbfield, cb, finalize) \
+#define GCFG_KEYWORD_BASE(nam, karg, elist, clist, cb, finalize) \
 	{ \
 		.name = nam, \
 		.arg = karg, \
 		.option = { .enumtokens = elist, }, \
 		.children = clist, \
-		.handle = { cbfield = cb }, \
+		.set_property = cb, \
 		.finalize_object = finalize, \
 	}
 
@@ -154,55 +152,55 @@ typedef struct gcfg_keyword_t {
 
 #define GCFG_KEYWORD_NO_ARG(kwdname, childlist, callback, finalize) \
 	GCFG_KEYWORD_BASE(kwdname, GCFG_VALUE_NONE, NULL, childlist, \
-			  .cb_value, callback, finalize)
+			  callback, finalize)
 
 #define GCFG_KEYWORD_BOOL(kwdname, childlist, callback, finalize) \
 	GCFG_KEYWORD_BASE(kwdname, GCFG_VALUE_BOOLEAN, NULL, childlist, \
-			  .cb_value, callback, finalize)
+			  callback, finalize)
 
 #define GCFG_KEYWORD_STRING(kwdname, childlist, callback, finalize) \
 	GCFG_KEYWORD_BASE(kwdname, GCFG_VALUE_STRING, NULL, childlist, \
-			  .cb_value, callback, finalize)
+			  callback, finalize)
 
 #define GCFG_KEYWORD_ENUM(kwdname, childlist, enumlist, callback, finalize) \
 	GCFG_KEYWORD_BASE(kwdname, GCFG_VALUE_ENUM, enumlist, childlist, \
-			  .cb_value, callback, finalize)
+			  callback, finalize)
 
 #define GCFG_KEYWORD_NUMBER(kwdname, childlist, callback, finalize) \
 	GCFG_KEYWORD_BASE(kwdname, GCFG_VALUE_NUMBER, NULL, childlist, \
-			  .cb_value, callback, finalize)
+			  callback, finalize)
 
 #define GCFG_KEYWORD_VEC2(kwdname, childlist, callback, finalize) \
 	GCFG_KEYWORD_BASE(kwdname, GCFG_VALUE_VEC2, NULL, childlist, \
-			  .cb_value, callback, finalize)
+			  callback, finalize)
 
 #define GCFG_KEYWORD_VEC3(kwdname, childlist, callback, finalize) \
 	GCFG_KEYWORD_BASE(kwdname, GCFG_VALUE_VEC3, NULL, childlist, \
-			  .cb_value, callback, finalize)
+			  callback, finalize)
 
 #define GCFG_KEYWORD_VEC4(kwdname, childlist, callback, finalize) \
 	GCFG_KEYWORD_BASE(kwdname, GCFG_VALUE_VEC4, NULL, childlist, \
-			  .cb_value, callback, finalize)
+			  callback, finalize)
 
 #define GCFG_KEYWORD_IPV4(kwdname, childlist, callback, finalize) \
 	GCFG_KEYWORD_BASE(kwdname, GCFG_VALUE_IPV4, NULL, childlist, \
-			  .cb_value, callback, finalize)
+			  callback, finalize)
 
 #define GCFG_KEYWORD_IPV6(kwdname, childlist, callback, finalize) \
 	GCFG_KEYWORD_BASE(kwdname, GCFG_VALUE_IPV6, NULL, childlist, \
-			  .cb_value, callback, finalize)
+			  callback, finalize)
 
 #define GCFG_KEYWORD_MAC(kwdname, childlist, callback, finalize) \
 	GCFG_KEYWORD_BASE(kwdname, GCFG_VALUE_MAC, NULL, childlist, \
-			  .cb_value, callback, finalize)
+			  callback, finalize)
 
 #define GCFG_KEYWORD_BANDWIDTH(kwdname, childlist, callback, finalize) \
 	GCFG_KEYWORD_BASE(kwdname, GCFG_VALUE_BANDWIDTH, NULL, childlist, \
-			  .cb_value, callback, finalize)
+			  callback, finalize)
 
 #define GCFG_KEYWORD_SIZE(kwdname, childlist, callback, finalize) \
 	GCFG_KEYWORD_BASE(kwdname, GCFG_VALUE_SIZE, NULL, childlist, \
-			  .cb_value, callback, finalize)
+			  callback, finalize)
 
 #define GCFG_END_KEYWORDS() \
 		{ .name = NULL }, \

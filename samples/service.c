@@ -311,7 +311,7 @@ GCFG_BEGIN_KEYWORDS(kw_service)
 	{
 		.name = "exec",
 		.arg = GCFG_VALUE_STRING,
-		.handle = { .cb_value = svc_begin_exec_block },
+		.set_property = svc_begin_exec_block,
 		.handle_listing = svc_exec_line,
 	},
 GCFG_END_KEYWORDS();
