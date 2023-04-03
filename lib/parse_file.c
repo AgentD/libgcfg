@@ -59,91 +59,53 @@ static const char *apply_arg(gcfg_file_t *file, const gcfg_keyword_t *kwd,
 	gcfg_value_t val;
 	char *strval;
 
+	memset(&val, 0, sizeof(val));
+
 	switch (kwd->arg) {
 	case GCFG_VALUE_NONE:
-		*child_out = kwd->set_property(file, parent, NULL);
+		val.type = GCFG_VALUE_NONE;
 		break;
 	case GCFG_VALUE_BOOLEAN:
 		ptr = gcfg_parse_boolean(file, ptr, &val);
-		if (ptr == NULL)
-			return NULL;
-		*child_out = kwd->set_property(file, parent, &val);
 		break;
 	case GCFG_VALUE_STRING:
 		strval = file->buffer;
 		ptr = gcfg_parse_string(file, ptr, strval);
-		if (ptr == NULL)
-			return NULL;
-
 		val.type = GCFG_VALUE_STRING;
-		val.flags = 0;
-		val.cidr_mask = 0;
 		val.data.string = strval;
-
-		*child_out = kwd->set_property(file, parent, &val);
 		break;
 	case GCFG_VALUE_ENUM:
 		ptr = gcfg_parse_enum(file, ptr, kwd->option.enumtokens, &val);
-		if (ptr == NULL)
-			return NULL;
-		*child_out = kwd->set_property(file, parent, &val);
 		break;
 	case GCFG_VALUE_NUMBER:
 		ptr = gcfg_parse_number(file, ptr, &val, 0);
-		if (ptr == NULL)
-			return NULL;
-		*child_out = kwd->set_property(file, parent, &val);
 		break;
 	case GCFG_VALUE_SIZE:
 		ptr = gcfg_parse_size(file, ptr, &val);
-		if (ptr == NULL)
-			return NULL;
-		*child_out = kwd->set_property(file, parent, &val);
 		break;
 #ifndef GCFG_DISABLE_VECTOR
 	case GCFG_VALUE_VEC2:
 		ptr = gcfg_parse_vector(file, ptr, &val, 2);
-		if (ptr == NULL)
-			return NULL;
-		*child_out = kwd->set_property(file, parent, &val);
 		break;
 	case GCFG_VALUE_VEC3:
 		ptr = gcfg_parse_vector(file, ptr, &val, 3);
-		if (ptr == NULL)
-			return NULL;
-		*child_out = kwd->set_property(file, parent, &val);
 		break;
 	case GCFG_VALUE_VEC4:
 		ptr = gcfg_parse_vector(file, ptr, &val, 4);
-		if (ptr == NULL)
-			return NULL;
-		*child_out = kwd->set_property(file, parent, &val);
 		break;
 #endif
 #ifndef GCFG_DISABLE_NETWORK
 	case GCFG_VALUE_IPV4:
 		ptr = gcfg_parse_ipv4(file, ptr, &val);
-		if (ptr == NULL)
-			return NULL;
-		*child_out = kwd->set_property(file, parent, &val);
 		break;
 	case GCFG_VALUE_IPV6:
 		ptr = gcfg_parse_ipv6(file, ptr, &val);
-		if (ptr == NULL)
-			return NULL;
-		*child_out = kwd->set_property(file, parent, &val);
 		break;
 	case GCFG_VALUE_MAC:
 		ptr = gcfg_parse_mac_addr(file, ptr, &val);
-		if (ptr == NULL)
-			return NULL;
-		*child_out = kwd->set_property(file, parent, &val);
 		break;
 	case GCFG_VALUE_BANDWIDTH:
 		ptr = gcfg_parse_bandwidth(file, ptr, &val);
-		if (ptr == NULL)
-			return NULL;
-		*child_out = kwd->set_property(file, parent, &val);
 		break;
 #endif
 	default:
@@ -153,6 +115,10 @@ static const char *apply_arg(gcfg_file_t *file, const gcfg_keyword_t *kwd,
 		return NULL;
 	}
 
+	if (ptr == NULL)
+		return NULL;
+
+	*child_out = kwd->set_property(file, parent, &val);
 	return skip_space(ptr);
 }
 
