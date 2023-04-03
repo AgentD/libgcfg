@@ -43,7 +43,7 @@ typedef enum {
 
 	GCFG_URI_HOST_IPV6 = 0x04,
 
-	GCFG_URI_HOST_NAME = 0x02,
+	GCFG_URI_HOST_NAME = 0x08,
 } GCFG_URI_FLAGS;
 
 typedef struct {
