@@ -88,8 +88,8 @@ const char *gcfg_parse_number(gcfg_file_t *f, const char *in,
 	out->flags = 0;
 	out->cidr_mask = 0;
 	out->type = percentage ? GCFG_VALUE_PERCENTAGE : GCFG_VALUE_NUMBER;
-	out->data.number.value[index] = negative ? -value : value;
-	out->data.number.exponent[index] = exponent;
+	out->data.number[index].value = negative ? -value : value;
+	out->data.number[index].exponent = exponent;
 	return in;
 fail_index:
 	if (f != NULL) {

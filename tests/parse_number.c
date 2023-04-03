@@ -8,10 +8,10 @@
 #include "test.h"
 
 #define NUMBER(a, b) \
-	{ .data = { .number = { {a}, {b} } }, .type=GCFG_VALUE_NUMBER }
+	{ .data = { .number = {{a, b}} }, .type=GCFG_VALUE_NUMBER }
 
 #define PERCENTAGE(a, b) \
-	{ .data = { .number = { {a}, {b} } }, .type=GCFG_VALUE_PERCENTAGE }
+	{ .data = { .number = {{a, b}} }, .type=GCFG_VALUE_PERCENTAGE }
 
 static const struct {
 	const char *in;
@@ -45,7 +45,7 @@ static const struct {
 static void print_num(char *buffer, const gcfg_value_t *out)
 {
 	sprintf(buffer, "%ld * 10^%d",
-		(long)out->data.number.value[0], out->data.number.exponent[0]);
+		(long)out->data.number[0].value, out->data.number[0].exponent);
 }
 
 static int dbl_cmp(double a, double b)

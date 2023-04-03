@@ -13,12 +13,12 @@ static const struct {
 	gcfg_value_t input;
 	double result;
 } test_vec[] = {
-	{ { .data = { .number = {{1337}, {0}} } }, 1337.0 },
-	{ { .data = { .number = {{-1337}, {0}} } }, -1337.0 },
-	{ { .data = { .number = {{1337}, {-2}} } }, 13.37 },
-	{ { .data = { .number = {{-1337}, {-2}} } }, -13.37 },
-	{ { .data = { .number = {{42}, {2}} } }, 4200.0 },
-	{ { .data = { .number = {{-42}, {2}} } }, -4200.0 },
+	{ { .data = { .number = {{1337, 0}} } }, 1337.0 },
+	{ { .data = { .number = {{-1337, 0}} } }, -1337.0 },
+	{ { .data = { .number = {{1337, -2}} } }, 13.37 },
+	{ { .data = { .number = {{-1337, -2}} } }, -13.37 },
+	{ { .data = { .number = {{42, 2}} } }, 4200.0 },
+	{ { .data = { .number = {{-42, 2}} } }, -4200.0 },
 };
 
 int main(void)
@@ -36,8 +36,8 @@ int main(void)
 		if (diff > 1e-10) {
 			fprintf(stderr, "'%lde%d' was converted "
 				"to %f instead of %f (diff %f)!\n",
-				(long)test_vec[i].input.data.number.value[0],
-				test_vec[i].input.data.number.exponent[0],
+				(long)test_vec[i].input.data.number[0].value,
+				test_vec[i].input.data.number[0].exponent,
 				ret, expected, diff);
 			return EXIT_FAILURE;
 		}

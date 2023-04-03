@@ -8,17 +8,17 @@
 #include "test.h"
 
 #define VEC1(a, b) \
-	{ .data = { .number = { {a}, {b} } }, .type = GCFG_VALUE_NUMBER }
+	{ .data = { .number = {{a, b}} }, .type = GCFG_VALUE_NUMBER }
 
 #define VEC2(a, b, c, d) \
-	{ .data = { .number = { {a, c}, {b, d} } }, .type = GCFG_VALUE_VEC2 }
+	{ .data = { .number = {{a, b}, {c, d}} }, .type = GCFG_VALUE_VEC2 }
 
 #define VEC3(a, b, c, d, e, f) \
-	{ .data = { .number = { {a, c, e}, {b, d, f} } }, \
+	{ .data = { .number = {{a, b}, {c, d}, {e, f}} }, \
 	  .type = GCFG_VALUE_VEC3 }
 
 #define VEC4(a, b, c, d, e, f, g, h) \
-	{ .data = { .number = { {a, c, e, g}, {b, d, f, h} } }, \
+	{ .data = { .number = {{a, b}, {c, d}, {e, f}, {g, h}} }, \
 	  .type = GCFG_VALUE_VEC4 }
 
 static const struct {

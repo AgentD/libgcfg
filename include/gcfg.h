@@ -66,9 +66,9 @@ typedef struct {
 		char *string;
 
 		struct {
-			int64_t value[4];
-			int32_t exponent[4];
-		} number;
+			int64_t value;
+			int32_t exponent;
+		} number[4];
 	} data;
 
 	uint16_t flags;
