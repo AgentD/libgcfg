@@ -8,6 +8,11 @@ sample_service_CPPFLAGS = $(AM_CPPFLAGS)
 sample_service_CPPFLAGS += -DCFGPATH=$(top_srcdir)/samples/service.cfg
 sample_service_LDADD = libgcfg.a
 
+sample_package_SOURCES = samples/package.c
+sample_package_CPPFLAGS = $(AM_CPPFLAGS) -D_GNU_SOURCE
+sample_package_CPPFLAGS += -DCFGPATH=$(top_srcdir)/samples/package.cfg
+sample_package_LDADD = libgcfg.a
+
 if DISABLE_NETWORK
 else
 if DISABLE_STDIO
@@ -19,8 +24,8 @@ endif
 
 if DISABLE_STDIO
 else
-check_PROGRAMS += sample_service
-TESTS += sample_service
+check_PROGRAMS += sample_service sample_package
+TESTS += sample_service sample_package
 endif
 
-EXTRA_DIST += samples/network.cfg samples/service.cfg
+EXTRA_DIST += samples/network.cfg samples/service.cfg samples/package.cfg

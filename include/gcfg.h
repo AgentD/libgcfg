@@ -202,6 +202,10 @@ typedef struct gcfg_keyword_t {
 	GCFG_KEYWORD_BASE(kwdname, GCFG_VALUE_SIZE, NULL, childlist, \
 			  callback, finalize)
 
+#define GCFG_KEYWORD_URI(kwdname, childlist, callback, finalize) \
+	GCFG_KEYWORD_BASE(kwdname, GCFG_VALUE_URI, NULL, childlist, \
+			  callback, finalize)
+
 #define GCFG_END_KEYWORDS() \
 		{ .name = NULL }, \
 	}

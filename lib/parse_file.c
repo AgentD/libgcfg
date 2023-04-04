@@ -107,6 +107,9 @@ static const char *apply_arg(gcfg_file_t *file, const gcfg_keyword_t *kwd,
 	case GCFG_VALUE_BANDWIDTH:
 		ptr = gcfg_parse_bandwidth(file, ptr, &val);
 		break;
+	case GCFG_VALUE_URI:
+		ptr = gcfg_parse_uri(file, ptr, file->buffer, &val);
+		break;
 #endif
 	default:
 		file->report_error(file,
